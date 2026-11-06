@@ -1,27 +1,22 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import { Bar, Doughnut } from "react-chartjs-2";
 import type { DashboardStats } from "@/lib/types";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  ArcElement,
-  Tooltip,
-  Legend,
+const DashboardCharts = dynamic(
+  () =>
+    import("@/components/dashboard-charts").then((m) => m.DashboardCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-400">
+        กำลังโหลดกราฟ...
+      </div>
+    ),
+  },
 );
 
 type PlateResult = {
@@ -54,7 +49,9 @@ export default function HomePage() {
     }
     setChecking(true);
     try {
-      const res = await fetch(`/api/registrations/check-plate?q=${encodeURIComponent(q)}`);
+      const res = await fetch(
+        `/api/registrations/check-plate?q=${encodeURIComponent(q)}`,
+      );
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "ตรวจสอบไม่สำเร็จ");
@@ -123,7 +120,8 @@ export default function HomePage() {
                 </p>
                 {result.created_at && (
                   <p className="mt-2 text-xs text-emerald-600/70">
-                    วันที่ยืนยัน: {new Date(result.created_at).toLocaleString("th-TH")}
+                    วันที่ยืนยัน:{" "}
+                    {new Date(result.created_at).toLocaleString("th-TH")}
                   </p>
                 )}
               </div>
@@ -137,7 +135,10 @@ export default function HomePage() {
                 </h4>
                 <p className="mt-1 text-sm text-slate-600">
                   ยังไม่ได้บันทึก หรืออาจพิมพ์ผิด — ไปที่เมนู{" "}
-                  <Link href="/form" className="font-bold text-blue-600 hover:underline">
+                  <Link
+                    href="/form"
+                    className="font-bold text-blue-600 hover:underline"
+                  >
                     ลงทะเบียน (นักเรียน)
                   </Link>
                 </p>
@@ -156,25 +157,25 @@ export default function HomePage() {
           {[
             {
               label: "รถลงทะเบียนทั้งหมด",
-              value: stats?.total ?? 0,
+              value: stats?.total ?? "…",
               icon: "fa-motorcycle",
               color: "bg-blue-50 text-blue-600",
             },
             {
               label: "ชั้น ม.ต้น (ม.1-ม.3)",
-              value: stats?.junior ?? 0,
+              value: stats?.junior ?? "…",
               icon: "fa-graduation-cap",
               color: "bg-indigo-50 text-indigo-600",
             },
             {
               label: "ชั้น ม.ปลาย (ม.4-ม.6)",
-              value: stats?.senior ?? 0,
+              value: stats?.senior ?? "…",
               icon: "fa-user-graduate",
               color: "bg-purple-50 text-purple-600",
             },
             {
               label: "อัตราการมีหมวกนิรภัย",
-              value: `${stats?.helmetRate ?? 0}%`,
+              value: stats ? `${stats.helmetRate}%` : "…",
               icon: "fa-helmet-safety",
               color: "bg-emerald-50 text-emerald-600",
               sub: stats
@@ -207,72 +208,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {stats && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm lg:col-span-2">
-            <h3 className="mb-6 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-              จำนวนรถจักรยานยนต์แยกตามระดับชั้น
-            </h3>
-            <div className="relative h-[300px] w-full">
-              <Bar
-                data={{
-                  labels: Object.keys(stats.byGrade),
-                  datasets: [
-                    {
-                      label: "จำนวนรถ (คัน)",
-                      data: Object.values(stats.byGrade),
-                      backgroundColor: [
-                        "rgba(59, 130, 246, 0.7)",
-                        "rgba(99, 102, 241, 0.7)",
-                        "rgba(139, 92, 246, 0.7)",
-                        "rgba(168, 85, 247, 0.7)",
-                        "rgba(236, 72, 153, 0.7)",
-                        "rgba(244, 63, 94, 0.7)",
-                      ],
-                      borderRadius: 8,
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: { legend: { display: false } },
-                  scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 } },
-                  },
-                }}
-              />
-            </div>
-          </div>
-          <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-            <h3 className="mb-6 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-              สัดส่วนความปลอดภัยหมวกนิรภัย
-            </h3>
-            <div className="relative flex h-[300px] w-full items-center justify-center">
-              <Doughnut
-                data={{
-                  labels: ["มีหมวกนิรภัย", "ไม่มีหมวกนิรภัย"],
-                  datasets: [
-                    {
-                      data: [stats.helmetYes, stats.helmetNo],
-                      backgroundColor: [
-                        "rgba(16, 185, 129, 0.85)",
-                        "rgba(244, 63, 94, 0.85)",
-                      ],
-                    },
-                  ],
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  cutout: "65%",
-                  plugins: { legend: { position: "bottom" } },
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      {stats && <DashboardCharts stats={stats} />}
     </div>
   );
 }

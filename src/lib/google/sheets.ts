@@ -1,3 +1,4 @@
+import { cacheDelete, cacheGet, cacheSet } from "@/lib/cache";
 import { getSheetId, getSheetsClient } from "@/lib/google/auth-sa";
 import type {
   DashboardStats,
@@ -11,6 +12,13 @@ import type {
 import { REGISTRATIONS_HEADERS, USERS_HEADERS } from "@/lib/types";
 
 type SheetName = "Users" | "Registrations" | "Settings";
+
+/** Short in-memory TTL — cuts repeat Sheets reads on the same serverless instance. */
+const SHEET_TTL_MS: Record<SheetName, number> = {
+  Users: 30_000,
+  Settings: 60_000,
+  Registrations: 20_000,
+};
 
 function bool(v: string | undefined): boolean {
   return String(v ?? "").toLowerCase() === "true" || v === "1";
@@ -29,13 +37,29 @@ function rowsToObjects<T extends string>(
   });
 }
 
+function sheetCacheKey(sheet: SheetName) {
+  return `sheet:${sheet}`;
+}
+
+function invalidateSheet(sheet: SheetName) {
+  cacheDelete(sheetCacheKey(sheet));
+  cacheDelete("dashboard:stats");
+  cacheDelete("public:config");
+}
+
 async function getValues(sheet: SheetName): Promise<string[][]> {
+  const key = sheetCacheKey(sheet);
+  const cached = cacheGet<string[][]>(key);
+  if (cached) return cached;
+
   const sheets = getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: getSheetId(),
     range: `${sheet}!A:Z`,
   });
-  return (res.data.values as string[][] | undefined) ?? [];
+  const values = (res.data.values as string[][] | undefined) ?? [];
+  cacheSet(key, values, SHEET_TTL_MS[sheet]);
+  return values;
 }
 
 async function appendRow(sheet: SheetName, values: string[]) {
@@ -46,6 +70,7 @@ async function appendRow(sheet: SheetName, values: string[]) {
     valueInputOption: "RAW",
     requestBody: { values: [values] },
   });
+  invalidateSheet(sheet);
 }
 
 async function updateRow(
@@ -60,6 +85,7 @@ async function updateRow(
     valueInputOption: "RAW",
     requestBody: { values: [values] },
   });
+  invalidateSheet(sheet);
 }
 
 async function deleteRow(sheet: SheetName, rowIndex1Based: number) {
@@ -91,6 +117,7 @@ async function deleteRow(sheet: SheetName, rowIndex1Based: number) {
       ],
     },
   });
+  invalidateSheet(sheet);
 }
 
 function findRowIndex(values: string[][], id: string): number {
@@ -186,6 +213,9 @@ export async function getDriveRootFolderId(): Promise<string> {
 }
 
 export async function getPublicConfig(): Promise<PublicConfig> {
+  const cached = cacheGet<PublicConfig>("public:config");
+  if (cached) return cached;
+
   const map = await getSettingsMap();
   const openRaw = map.REGISTRATION_OPEN ?? "true";
   const registrationOpen =
@@ -193,7 +223,7 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     openRaw.toLowerCase() === "true" ||
     openRaw === "1";
 
-  return {
+  const config: PublicConfig = {
     registrationOpen,
     closedMessage:
       map.CLOSED_MESSAGE ||
@@ -220,6 +250,8 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     contactEmail: map.CONTACT_EMAIL || "",
     academicYear: map.CURRENT_ACADEMIC_YEAR || "",
   };
+  cacheSet("public:config", config, 60_000);
+  return config;
 }
 
 /* ---------- Registrations ---------- */
@@ -344,6 +376,9 @@ export async function deleteRegistration(id: string): Promise<Registration> {
 }
 
 export async function getDashboardStats(): Promise<DashboardStats> {
+  const cached = cacheGet<DashboardStats>("dashboard:stats");
+  if (cached) return cached;
+
   const rows = await listRegistrations();
   const byGrade: Record<string, number> = {
     "ม.1": 0,
@@ -367,7 +402,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
   }
 
   const total = rows.length;
-  return {
+  const stats: DashboardStats = {
     total,
     junior,
     senior,
@@ -376,5 +411,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
     helmetRate: total > 0 ? Number(((helmetYes / total) * 100).toFixed(1)) : 0,
     byGrade,
   };
+  cacheSet("dashboard:stats", stats, 20_000);
+  return stats;
 }
 

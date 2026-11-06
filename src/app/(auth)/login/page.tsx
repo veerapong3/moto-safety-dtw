@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { PerfHud } from "@/components/perf-hud";
+import { SiteFooter } from "@/components/site-footer";
 import { timedFetch } from "@/lib/perf-client";
 
 export default function LoginPage() {
@@ -45,7 +46,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="relative flex min-h-screen overflow-hidden bg-[#0b1f4a] text-white lg:bg-slate-50 lg:text-slate-900">
+    <div className="flex min-h-screen flex-col bg-[#0b1f4a] text-white lg:bg-slate-50 lg:text-slate-900">
+      <div className="relative flex min-h-0 flex-1 overflow-hidden">
       {/* Atmosphere */}
       <div
         aria-hidden
@@ -220,12 +222,11 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="mt-8 text-center text-xs text-blue-100/70 lg:text-slate-400">
-            © {new Date().getFullYear()} MOTO-Safety DTW_School
-          </p>
         </div>
       </main>
+      </div>
 
+      <SiteFooter />
       <PerfHud />
     </div>
   );

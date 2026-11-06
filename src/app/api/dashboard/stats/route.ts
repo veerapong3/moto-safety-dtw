@@ -1,16 +1,17 @@
-import { handleApiError, jsonOk } from "@/lib/api";
+import { handleApiError } from "@/lib/api";
 import { getDashboardStats } from "@/lib/google/sheets";
-import { NextResponse } from "next/server";
+
+export const revalidate = 20;
 
 export async function GET() {
   try {
     const stats = await getDashboardStats();
-    const res = NextResponse.json(stats);
-    res.headers.set(
-      "Cache-Control",
-      "public, s-maxage=20, stale-while-revalidate=60",
-    );
-    return res;
+    return Response.json(stats, {
+      headers: {
+        "Cache-Control":
+          "public, s-maxage=20, stale-while-revalidate=60, max-age=0",
+      },
+    });
   } catch (err) {
     return handleApiError(err);
   }

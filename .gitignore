@@ -22,3 +22,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .secrets/
+**/credentials*.json
+**/service-account*.json
+**/*-sa.json
+**/oauth-tokens*
+*.p12
+*.key

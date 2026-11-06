@@ -34,6 +34,17 @@ npm run dev
 
 รายละเอียด schema: [docs/SHEET_SCHEMA.md](docs/SHEET_SCHEMA.md)
 
+## ความปลอดภัย (อย่า commit)
+
+เก็บเฉพาะใน `.env.local` / Vercel Environment Variables — **ห้าม push**
+
+- `GOOGLE_PRIVATE_KEY`, `GOOGLE_SERVICE_ACCOUNT_EMAIL`
+- `GOOGLE_DRIVE_OAUTH_CLIENT_SECRET`, `GOOGLE_DRIVE_OAUTH_REFRESH_TOKEN`
+- `AUTH_SECRET`, `BLOB_READ_WRITE_TOKEN`, `ADMIN_PASSWORD`
+- Sheet ID / Drive Folder ID จริง (ใส่ใน env ไม่ใส่ในโค้ด)
+
+`.env.local` ถูก ignore อยู่แล้ว · บน GitHub มีแค่ `.env.example` (ค่าตัวอย่างว่าง)
+
 ## หมายเหตุ
 
 - Vercel Hobby จำกัด body ~4.5MB — ฟอร์มบีบอัดรูปฝั่ง client ก่อนอัป

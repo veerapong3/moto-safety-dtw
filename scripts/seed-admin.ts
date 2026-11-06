@@ -20,7 +20,10 @@ async function main() {
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, "\n");
   const sheetId = process.env.GOOGLE_SHEET_ID;
   const username = process.env.ADMIN_USERNAME || "admin";
-  const password = process.env.ADMIN_PASSWORD || "admin1234";
+  const password = process.env.ADMIN_PASSWORD?.trim();
+  if (!password) {
+    throw new Error("ตั้ง ADMIN_PASSWORD ใน env ก่อนรัน seed (ห้ามใช้รหัสผ่านเริ่มต้น)");
+  }
   const displayName = process.env.ADMIN_NAME || "ผู้ดูแลระบบ";
 
   if (!email || !privateKey || !sheetId) {

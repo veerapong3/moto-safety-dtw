@@ -1,13 +1,15 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const links = [
-  { href: "/", label: "หน้าแรก" },
-  { href: "/form", label: "ลงทะเบียน" },
-  { href: "/admin", label: "ผู้ดูแล" },
+  { href: "/", label: "หน้าหลัก", icon: "fa-house", match: "exact" as const },
+  { href: "/#stats", label: "สถิติ", icon: "fa-chart-column", match: "hash" as const },
+  { href: "/form", label: "ลงทะเบียน", icon: "fa-pen-to-square", match: "prefix" as const },
+  { href: "/admin", label: "ผู้ดูแล", icon: "fa-user-shield", match: "prefix" as const },
 ];
 
 export function SiteNav() {
@@ -15,29 +17,45 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-slate-200/80 bg-[#fafafa]/90 backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4 sm:px-0">
-        <Link
-          href="/"
-          className="font-display text-sm font-semibold tracking-tight text-slate-900"
-        >
-          MOTO-Safety
+    <nav className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 shadow-sm backdrop-blur-md">
+      <div className="mx-auto flex h-[4.25rem] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
+          <Image
+            src="/school-mark.jpg"
+            alt=""
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-full object-cover ring-2 ring-blue-100"
+          />
+          <div className="min-w-0">
+            <span className="font-display block truncate text-[15px] font-bold leading-tight text-[#1d4ed8] sm:text-base">
+              MOTO-SafetyDTW
+            </span>
+            <span className="block truncate text-[11px] text-slate-500">
+              DTW School · โรงเรียนดอนตาลวิทยา
+            </span>
+          </div>
         </Link>
 
-        <div className="hidden items-center gap-6 md:flex">
+        <div className="hidden items-center gap-1 md:flex">
           {links.map((l) => {
             const active =
-              l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
+              l.match === "exact"
+                ? pathname === "/"
+                : l.match === "prefix"
+                  ? pathname.startsWith(l.href)
+                  : false;
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`text-sm transition ${
+                className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm font-medium transition ${
                   active
-                    ? "font-semibold text-slate-900"
-                    : "text-slate-500 hover:text-slate-800"
+                    ? "bg-[#2563eb] text-white shadow-sm shadow-blue-600/25"
+                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
+                <i className={`fa-solid ${l.icon} text-xs opacity-80`} />
                 {l.label}
               </Link>
             );
@@ -46,7 +64,7 @@ export function SiteNav() {
 
         <button
           type="button"
-          className="p-2 text-slate-500 hover:text-slate-900 md:hidden"
+          className="grid h-10 w-10 place-items-center rounded-full text-slate-600 hover:bg-slate-100 md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="เมนู"
         >
@@ -55,15 +73,16 @@ export function SiteNav() {
       </div>
 
       {open && (
-        <div className="border-t border-slate-100 md:hidden">
-          <div className="mx-auto max-w-2xl space-y-1 px-4 py-3">
+        <div className="border-t border-slate-100 bg-white md:hidden">
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="block py-2 text-sm text-slate-700"
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
               >
+                <i className={`fa-solid ${l.icon} mr-2 text-blue-600`} />
                 {l.label}
               </Link>
             ))}

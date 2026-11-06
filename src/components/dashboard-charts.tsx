@@ -21,30 +21,27 @@ ChartJS.register(
   Legend,
 );
 
-export function DashboardCharts({ stats }: { stats: DashboardStats }) {
-  const grades = Object.keys(stats.byGrade);
-  const values = Object.values(stats.byGrade);
+const ink = "rgba(15, 23, 42, 0.82)";
+const mute = "rgba(148, 163, 184, 0.85)";
 
+export function DashboardCharts({ stats }: { stats: DashboardStats }) {
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-      <div className="lg:col-span-2">
-        <h3 className="mb-5 font-display text-lg font-semibold text-slate-800">
-          จำนวนรถแยกตามระดับชั้น
+    <div className="grid grid-cols-1 gap-12 sm:grid-cols-2">
+      <div>
+        <h3 className="mb-4 text-center text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+          ตามระดับชั้น
         </h3>
-        <div className="relative h-[300px] w-full">
+        <div className="relative h-[240px] w-full">
           <Bar
             data={{
-              labels: grades,
+              labels: Object.keys(stats.byGrade),
               datasets: [
                 {
-                  label: "จำนวนรถ (คัน)",
-                  data: values,
-                  backgroundColor: grades.map((_, i) =>
-                    i % 2 === 0
-                      ? "rgba(29, 78, 216, 0.78)"
-                      : "rgba(245, 158, 11, 0.78)",
-                  ),
-                  borderRadius: 4,
+                  label: "คัน",
+                  data: Object.values(stats.byGrade),
+                  backgroundColor: ink,
+                  borderRadius: 2,
+                  barThickness: 18,
                 },
               ],
             }}
@@ -55,12 +52,14 @@ export function DashboardCharts({ stats }: { stats: DashboardStats }) {
               scales: {
                 x: {
                   grid: { display: false },
-                  ticks: { font: { family: "Kanit, Sarabun, sans-serif" } },
+                  border: { display: false },
+                  ticks: { color: "#94a3b8", font: { size: 11 } },
                 },
                 y: {
                   beginAtZero: true,
-                  ticks: { stepSize: 1 },
-                  grid: { color: "rgba(148,163,184,0.25)" },
+                  ticks: { stepSize: 1, color: "#94a3b8", font: { size: 11 } },
+                  grid: { color: "rgba(226,232,240,0.9)" },
+                  border: { display: false },
                 },
               },
             }}
@@ -69,20 +68,17 @@ export function DashboardCharts({ stats }: { stats: DashboardStats }) {
       </div>
 
       <div>
-        <h3 className="mb-5 font-display text-lg font-semibold text-slate-800">
-          สัดส่วนหมวกนิรภัย
+        <h3 className="mb-4 text-center text-xs font-medium uppercase tracking-[0.18em] text-slate-400">
+          หมวกนิรภัย
         </h3>
-        <div className="relative flex h-[300px] w-full items-center justify-center">
+        <div className="relative mx-auto flex h-[240px] w-full max-w-[240px] items-center justify-center">
           <Doughnut
             data={{
-              labels: ["มีหมวก", "ไม่มีหมวก"],
+              labels: ["มี", "ไม่มี"],
               datasets: [
                 {
                   data: [stats.helmetYes, stats.helmetNo],
-                  backgroundColor: [
-                    "rgba(5, 150, 105, 0.9)",
-                    "rgba(225, 29, 72, 0.85)",
-                  ],
+                  backgroundColor: [ink, mute],
                   borderWidth: 0,
                 },
               ],
@@ -90,13 +86,15 @@ export function DashboardCharts({ stats }: { stats: DashboardStats }) {
             options={{
               responsive: true,
               maintainAspectRatio: false,
-              cutout: "68%",
+              cutout: "72%",
               plugins: {
                 legend: {
                   position: "bottom",
                   labels: {
-                    boxWidth: 12,
-                    font: { family: "Sarabun, sans-serif", size: 12 },
+                    boxWidth: 8,
+                    boxHeight: 8,
+                    color: "#64748b",
+                    font: { size: 11 },
                   },
                 },
               },

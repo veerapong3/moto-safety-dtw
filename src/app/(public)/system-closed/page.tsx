@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { timedFetch } from "@/lib/perf-client";
 import type { PublicConfig } from "@/lib/types";
 
 export default function SystemClosedPage() {
   const [config, setConfig] = useState<PublicConfig | null>(null);
 
   useEffect(() => {
-    fetch("/api/config")
+    timedFetch("/api/config")
       .then((r) => r.json())
       .then(setConfig)
       .catch(() => undefined);

@@ -1,10 +1,10 @@
-import { handleApiError } from "@/lib/api";
+import { runApi } from "@/lib/api";
 import { getDashboardStats } from "@/lib/google/sheets";
 
 export const revalidate = 20;
 
 export async function GET() {
-  try {
+  return runApi(async () => {
     const stats = await getDashboardStats();
     return Response.json(stats, {
       headers: {
@@ -12,7 +12,5 @@ export async function GET() {
           "public, s-maxage=20, stale-while-revalidate=60, max-age=0",
       },
     });
-  } catch (err) {
-    return handleApiError(err);
-  }
+  });
 }

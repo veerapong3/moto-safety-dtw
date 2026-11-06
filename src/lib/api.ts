@@ -16,11 +16,23 @@ export function handleApiError(err: unknown) {
   return jsonError(message, 500);
 }
 
+/** Attach Sheets/API duration headers for client perf HUD. */
+export function withServerTiming<T extends Response>(
+  res: T,
+  startedAt: number,
+): T {
+  const ms = Math.max(0, Date.now() - startedAt);
+  res.headers.set("X-Server-Time-Ms", String(ms));
+  res.headers.set("Server-Timing", `app;dur=${ms}`);
+  return res;
+}
+
 export async function runApi(fn: () => Promise<Response>): Promise<Response> {
+  const startedAt = Date.now();
   try {
-    return await fn();
+    return withServerTiming(await fn(), startedAt);
   } catch (err) {
-    return handleApiError(err);
+    return withServerTiming(handleApiError(err), startedAt);
   }
 }
 

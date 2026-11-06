@@ -1,3 +1,4 @@
+import { PerfHud } from "@/components/perf-hud";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 
@@ -13,6 +14,7 @@ export default function AdminLayout({
         {children}
       </main>
       <SiteFooter />
+      <PerfHud />
     </div>
   );
 }

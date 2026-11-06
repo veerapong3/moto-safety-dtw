@@ -4,9 +4,11 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { PerfHud } from "@/components/perf-hud";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
 import { Field, Input } from "@/components/ui/input";
+import { timedFetch } from "@/lib/perf-client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -19,7 +21,7 @@ export default function LoginPage() {
     setLoading(true);
     const form = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await timedFetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -96,6 +98,7 @@ export default function LoginPage() {
         </div>
       </div>
       <SiteFooter />
+      <PerfHud />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
+import { timedFetch } from "@/lib/perf-client";
 import type { PublicConfig } from "@/lib/types";
 import { THAI_PROVINCES } from "@/lib/validations";
 
@@ -27,7 +28,7 @@ export default function FormPage() {
   });
 
   useEffect(() => {
-    fetch("/api/config")
+    timedFetch("/api/config")
       .then((r) => r.json())
       .then((c: PublicConfig) => {
         if (!c.registrationOpen) {
@@ -55,7 +56,7 @@ export default function FormPage() {
       fd.append("file", blob, `${key}.jpg`);
       fd.append("kind", key);
       fd.append("label", key);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const res = await timedFetch("/api/upload", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "อัปโหลดไม่สำเร็จ");
@@ -77,7 +78,7 @@ export default function FormPage() {
     setLoading(true);
     const form = new FormData(e.currentTarget);
     try {
-      const res = await fetch("/api/registrations", {
+      const res = await timedFetch("/api/registrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

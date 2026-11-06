@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { timedFetch } from "@/lib/perf-client";
 import type { DashboardStats } from "@/lib/types";
 
 const DashboardCharts = dynamic(
@@ -35,7 +36,7 @@ export default function HomePage() {
   const [checking, setChecking] = useState(false);
 
   useEffect(() => {
-    fetch("/api/dashboard/stats")
+    timedFetch("/api/dashboard/stats")
       .then((r) => r.json())
       .then((d) => setStats(d))
       .catch(() => toast.error("โหลดสถิติไม่สำเร็จ"));
@@ -49,7 +50,7 @@ export default function HomePage() {
     }
     setChecking(true);
     try {
-      const res = await fetch(
+      const res = await timedFetch(
         `/api/registrations/check-plate?q=${encodeURIComponent(q)}`,
       );
       const data = await res.json();

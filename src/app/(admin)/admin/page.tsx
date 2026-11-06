@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
+import { timedFetch } from "@/lib/perf-client";
 import type { PublicConfig, Registration } from "@/lib/types";
 import { THAI_PROVINCES } from "@/lib/validations";
 
@@ -35,8 +36,8 @@ export default function AdminPage() {
   const loadAll = useCallback(async () => {
     try {
       const [regRes, setRes] = await Promise.all([
-        fetch("/api/registrations"),
-        fetch("/api/settings"),
+        timedFetch("/api/registrations"),
+        timedFetch("/api/settings"),
       ]);
       if (regRes.status === 401 || setRes.status === 401) {
         router.replace("/login?next=/admin");
@@ -74,14 +75,14 @@ export default function AdminPage() {
   }, [rows, query, filterGrade, filterRoom]);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await timedFetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   }
 
   async function saveSettings() {
     setSaving(true);
     try {
-      const res = await fetch("/api/settings", {
+      const res = await timedFetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -117,7 +118,7 @@ export default function AdminPage() {
     fd.append("kind", "samples");
     fd.append("sample", "1");
     fd.append("label", `sample_${kind}`);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await timedFetch("/api/upload", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);
     const key =
@@ -132,7 +133,9 @@ export default function AdminPage() {
 
   async function deleteRow(id: string) {
     if (!confirm("ยืนยันลบข้อมูลและรูปภาพออกอย่างถาวรหรือไม่?")) return;
-    const res = await fetch(`/api/registrations/${id}`, { method: "DELETE" });
+    const res = await timedFetch(`/api/registrations/${id}`, {
+      method: "DELETE",
+    });
     const data = await res.json();
     if (!res.ok) {
       toast.error(data.error || "ลบไม่สำเร็จ");
@@ -149,7 +152,7 @@ export default function AdminPage() {
     fd.append("file", blob, `${kind}.jpg`);
     fd.append("kind", kind);
     fd.append("label", `${edit.student_id}_${kind}`);
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const res = await timedFetch("/api/upload", { method: "POST", body: fd });
     const data = await res.json();
     if (!res.ok) {
       toast.error(data.error || "อัปโหลดไม่สำเร็จ");
@@ -165,7 +168,7 @@ export default function AdminPage() {
     setSaving(true);
     const form = new FormData(e.currentTarget);
     try {
-      const res = await fetch(`/api/registrations/${edit.id}`, {
+      const res = await timedFetch(`/api/registrations/${edit.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

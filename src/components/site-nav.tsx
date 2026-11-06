@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 const links = [
-  { href: "/", label: "Dashboard", icon: "fa-chart-pie" },
-  { href: "/form", label: "ลงทะเบียน (นักเรียน)", icon: "fa-clipboard-list" },
-  { href: "/admin", label: "ผู้ดูแลระบบ", icon: "fa-user-shield" },
+  { href: "/", label: "หน้าแรก", icon: "fa-house" },
+  { href: "/form", label: "ลงทะเบียน", icon: "fa-clipboard-list" },
+  { href: "/admin", label: "ผู้ดูแล", icon: "fa-user-shield" },
 ];
 
 export function SiteNav() {
@@ -15,23 +15,23 @@ export function SiteNav() {
   const [open, setOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 bg-blue-800 text-white shadow-md">
+    <nav className="sticky top-0 z-50 border-b border-blue-950/30 bg-[#0b1f4d]/95 text-white shadow-md backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-3">
-          <div className="rounded-lg bg-white p-2 font-bold text-blue-800 shadow-inner">
-            <i className="fa-solid fa-motorcycle text-xl" />
+          <div className="grid h-10 w-10 place-items-center rounded-xl bg-amber-400 font-bold text-slate-900 shadow-inner">
+            <i className="fa-solid fa-motorcycle text-lg" />
           </div>
           <div>
-            <span className="block text-lg font-bold tracking-wider sm:inline">
-              MOTO-Safety DTW_School
+            <span className="font-display block text-lg font-bold tracking-tight sm:inline">
+              MOTO-Safety
             </span>
-            <span className="block text-xs text-blue-200 sm:hidden">
-              ระบบสารสนเทศรถจักรยานยนต์
+            <span className="ml-0 block text-xs text-blue-200/80 sm:ml-2 sm:inline">
+              DTW School
             </span>
           </div>
         </Link>
 
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-1 md:flex">
           {links.map((l) => {
             const active =
               l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
@@ -39,11 +39,14 @@ export function SiteNav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`rounded-md px-3 py-2 text-sm font-medium transition hover:bg-blue-700 ${
-                  active ? "bg-blue-900" : ""
+                className={`rounded-xl px-3.5 py-2 text-sm font-medium transition ${
+                  active
+                    ? "bg-white/15 text-white"
+                    : "text-blue-100/85 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <i className={`fa-solid ${l.icon} mr-1`} /> {l.label}
+                <i className={`fa-solid ${l.icon} mr-1.5 opacity-80`} />
+                {l.label}
               </Link>
             );
           })}
@@ -60,14 +63,14 @@ export function SiteNav() {
       </div>
 
       {open && (
-        <div className="border-t border-blue-700 bg-blue-900 md:hidden">
+        <div className="border-t border-white/10 bg-[#0a1a40] md:hidden">
           <div className="space-y-1 px-3 py-3">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="block rounded-md px-3 py-2 text-base font-medium hover:bg-blue-800"
+                className="block rounded-xl px-3 py-2.5 text-base font-medium hover:bg-white/10"
               >
                 <i className={`fa-solid ${l.icon} mr-2`} />
                 {l.label}

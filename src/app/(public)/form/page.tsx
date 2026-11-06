@@ -1,12 +1,14 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
 import { timedFetch } from "@/lib/perf-client";
+import { swalError, swalSuccess, swalWarning } from "@/lib/swal";
 import type { PublicConfig } from "@/lib/types";
 import { THAI_PROVINCES } from "@/lib/validations";
 
@@ -16,6 +18,7 @@ export default function FormPage() {
   const router = useRouter();
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState<ImgKey | null>(null);
   const [previews, setPreviews] = useState<Record<ImgKey, string>>({
     bike: "",
     plate: "",
@@ -47,6 +50,7 @@ export default function FormPage() {
 
   async function onPick(key: ImgKey, file: File | null) {
     if (!file) return;
+    setUploading(key);
     try {
       const blob = await compressImageFile(file, 800, 0.8);
       const previewUrl = URL.createObjectURL(blob);
@@ -60,12 +64,19 @@ export default function FormPage() {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "อัปโหลดไม่สำเร็จ");
+        await swalError("อัปโหลดไม่สำเร็จ", data.error || "ลองเลือกรูปใหม่");
         return;
       }
       setFileIds((f) => ({ ...f, [key]: data.fileId }));
-      toast.success(`อัปโหลดรูป${key === "bike" ? "รถ" : key === "plate" ? "ป้าย" : "ผู้ขับ"}แล้ว`);
+      const label =
+        key === "bike" ? "รถ" : key === "plate" ? "ป้ายทะเบียน" : "ผู้ขับขี่";
+      toast.success(`อัปโหลดรูป${label}แล้ว`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "อัปโหลดไม่สำเร็จ");
+      const msg = e instanceof Error ? e.message : "อัปโหลดไม่สำเร็จ";
+      toast.error(msg);
+      await swalError("อัปโหลดไม่สำเร็จ", msg);
+    } finally {
+      setUploading(null);
     }
   }
 
@@ -73,6 +84,10 @@ export default function FormPage() {
     e.preventDefault();
     if (!fileIds.bike || !fileIds.plate || !fileIds.rider) {
       toast.warning("กรุณาเลือกรูปภาพให้ครบถ้วนทั้ง 3 รูป");
+      await swalWarning(
+        "รูปยังไม่ครบ",
+        "กรุณาอัปโหลดรูปรถ รูปป้ายทะเบียน และรูปผู้ขับขี่ให้ครบก่อนบันทึก",
+      );
       return;
     }
     setLoading(true);
@@ -103,50 +118,109 @@ export default function FormPage() {
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error || "บันทึกไม่สำเร็จ");
+        await swalError("บันทึกไม่สำเร็จ", data.error || "ลองใหม่อีกครั้ง");
         return;
       }
       toast.success(data.message || "บันทึกสำเร็จ");
-      setTimeout(() => router.push("/"), 1200);
+      await swalSuccess(
+        "ลงทะเบียนสำเร็จ",
+        data.message || "ระบบบันทึกข้อมูลเรียบร้อยแล้ว",
+      );
+      router.push("/");
     } catch {
       toast.error("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
+      await swalError(
+        "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้",
+        "โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+      );
     } finally {
       setLoading(false);
     }
   }
 
   if (!config) {
-    return <p className="text-center text-slate-500">กำลังโหลดแบบฟอร์ม...</p>;
+    return (
+      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-blue-200 border-t-blue-700" />
+        <p className="text-sm text-slate-500">กำลังโหลดแบบฟอร์ม...</p>
+      </div>
+    );
   }
 
-  const imgSlots: { key: ImgKey; label: string; icon: string }[] = [
-    { key: "bike", label: "รูปรถจักรยานยนต์", icon: "fa-motorcycle" },
-    { key: "plate", label: "รูปป้ายทะเบียนรถ", icon: "fa-rectangle-ad" },
-    { key: "rider", label: "รูปถ่ายผู้ขับขี่รถ", icon: "fa-user-astronaut" },
+  const imgSlots: {
+    key: ImgKey;
+    label: string;
+    hint: string;
+    icon: string;
+  }[] = [
+    {
+      key: "bike",
+      label: "รูปรถจักรยานยนต์",
+      hint: "ถ่ายทั้งคันให้เห็นชัด",
+      icon: "fa-motorcycle",
+    },
+    {
+      key: "plate",
+      label: "รูปป้ายทะเบียน",
+      hint: "ตัวอักษรอ่านได้ชัด",
+      icon: "fa-rectangle-ad",
+    },
+    {
+      key: "rider",
+      label: "รูปผู้ขับขี่",
+      hint: "หน้าตรง สวมหมวกถ้ามี",
+      icon: "fa-user",
+    },
   ];
 
-  return (
-    <div className="mx-auto max-w-3xl">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-extrabold text-slate-800">
-          ลงทะเบียนข้อมูลรถจักรยานยนต์
-        </h2>
-        <p className="mt-2 text-sm text-slate-500">
-          กรุณากรอกข้อมูลจริงตามความเป็นจริงเพื่อประโยชน์ด้านความปลอดภัย
-        </p>
-      </div>
+  const uploadedCount = [fileIds.bike, fileIds.plate, fileIds.rider].filter(
+    Boolean,
+  ).length;
 
-      <form onSubmit={onSubmit} className="space-y-6">
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4">
-            <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-bold text-blue-800">
-              ส่วนที่ 1
+  return (
+    <div className="mx-auto max-w-3xl pb-24">
+      <header className="animate-fade-up mb-8 overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-8 text-white shadow-lg shadow-blue-900/20 sm:px-8">
+        <p className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+          MOTO-Safety
+        </p>
+        <h1 className="mt-3 text-lg font-semibold text-white/95 sm:text-xl">
+          ลงทะเบียนรถจักรยานยนต์นักเรียน
+        </h1>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-blue-100/85">
+          กรอกข้อมูลจริงให้ครบ 3 ส่วน แล้วอัปโหลดรูปหลักฐานก่อนกดบันทึก
+        </p>
+        <ol className="mt-6 flex flex-wrap gap-2 text-xs font-semibold">
+          {["ข้อมูลนักเรียน", "ข้อมูลรถ", "รูปหลักฐาน"].map((step, i) => (
+            <li
+              key={step}
+              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm"
+            >
+              <span className="grid h-5 w-5 place-items-center rounded-full bg-amber-400 text-[11px] font-bold text-slate-900">
+                {i + 1}
+              </span>
+              {step}
+            </li>
+          ))}
+        </ol>
+      </header>
+
+      <form onSubmit={onSubmit} className="space-y-5">
+        <section className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7">
+          <div className="mb-5 flex items-center gap-3">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+              1
             </span>
-            <h3 className="text-lg font-bold text-slate-700">ข้อมูลส่วนตัวนักเรียน</h3>
+            <div>
+              <h2 className="font-display text-lg font-semibold text-slate-900">
+                ข้อมูลส่วนตัวนักเรียน
+              </h2>
+              <p className="text-xs text-slate-500">ตามบัตรนักเรียน / ทะเบียนบ้าน</p>
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <Field label="คำนำหน้า *">
               <Select name="prefix" required defaultValue="">
-                <option value="">-- เลือกคำนำหน้า --</option>
+                <option value="">-- เลือก --</option>
                 {["เด็กชาย", "เด็กหญิง", "นาย", "นางสาว"].map((p) => (
                   <option key={p} value={p}>
                     {p}
@@ -170,7 +244,7 @@ export default function FormPage() {
             </Field>
             <Field label="ระดับชั้น *">
               <Select name="grade" required defaultValue="">
-                <option value="">-- เลือกระดับชั้น --</option>
+                <option value="">-- เลือกชั้น --</option>
                 {config.grades.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -180,7 +254,7 @@ export default function FormPage() {
             </Field>
             <Field label="ห้องเรียน *">
               <Select name="room" required defaultValue="">
-                <option value="">-- เลือกห้องเรียน --</option>
+                <option value="">-- เลือกห้อง --</option>
                 {config.rooms.map((r) => (
                   <option key={r} value={r}>
                     ห้อง {r}
@@ -202,17 +276,25 @@ export default function FormPage() {
           </div>
         </section>
 
-        <section className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <div className="mb-5 flex items-center gap-3 border-b border-slate-100 pb-4">
-            <span className="rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-800">
-              ส่วนที่ 2
+        <section
+          className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7"
+          style={{ animationDelay: "60ms" }}
+        >
+          <div className="mb-5 flex items-center gap-3">
+            <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+              2
             </span>
-            <h3 className="text-lg font-bold text-slate-700">ข้อมูลรถและการใช้งาน</h3>
+            <div>
+              <h2 className="font-display text-lg font-semibold text-slate-900">
+                ข้อมูลรถและการใช้งาน
+              </h2>
+              <p className="text-xs text-slate-500">ตามป้ายทะเบียนจริง</p>
+            </div>
           </div>
-          <div className="mb-5 grid grid-cols-1 gap-5 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <Field label="ยี่ห้อรถ *">
               <Select name="brand" required defaultValue="">
-                <option value="">-- เลือกยี่ห้อรถ --</option>
+                <option value="">-- เลือกยี่ห้อ --</option>
                 {config.brands.map((b) => (
                   <option key={b} value={b}>
                     {b}
@@ -222,7 +304,7 @@ export default function FormPage() {
             </Field>
             <Field label="สีรถ *">
               <Select name="color" required defaultValue="">
-                <option value="">-- เลือกสีรถ --</option>
+                <option value="">-- เลือกสี --</option>
                 {config.colors.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -235,7 +317,7 @@ export default function FormPage() {
                 name="plateNumber"
                 required
                 pattern="[ก-ฮ]{2,3}[0-9]+"
-                placeholder="เช่น ยนร456"
+                placeholder="เช่น กข1234"
               />
             </Field>
             <Field label="จังหวัดที่จดทะเบียน *">
@@ -248,86 +330,166 @@ export default function FormPage() {
                 ))}
               </Select>
             </Field>
-            <div className="md:col-span-2 border-t border-slate-100 pt-5">
+
+            <div className="md:col-span-2">
               <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600">
                 การมีหมวกนิรภัย *
               </span>
-              <div className="flex gap-4">
-                {(["มี", "ไม่มี"] as const).map((v) => (
+              <div className="grid grid-cols-2 gap-3">
+                {(
+                  [
+                    { value: "มี", label: "มีหมวกนิรภัย", icon: "fa-helmet-safety" },
+                    { value: "ไม่มี", label: "ไม่มีหมวก", icon: "fa-ban" },
+                  ] as const
+                ).map((opt) => (
                   <label
-                    key={v}
-                    className="flex flex-grow cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-3 hover:bg-slate-100"
+                    key={opt.value}
+                    className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:ring-2 has-[:checked]:ring-blue-200"
                   >
                     <input
                       type="radio"
                       name="helmet"
-                      value={v}
+                      value={opt.value}
                       required
-                      className="mr-2"
+                      className="accent-blue-700"
+                    />
+                    <i
+                      className={`fa-solid ${opt.icon} text-slate-400 group-has-[:checked]:text-blue-700`}
                     />
                     <span className="text-sm font-bold text-slate-700">
-                      {v === "มี" ? "มีหมวกนิรภัย" : "ไม่มีหมวกนิรภัย"}
+                      {opt.label}
                     </span>
                   </label>
                 ))}
               </div>
             </div>
+
             <div className="md:col-span-2">
               <Field label="ชื่อผู้ซ้อนท้ายประจำ (ถ้ามี)">
                 <Input name="pillionName" placeholder="เว้นว่างได้" />
               </Field>
             </div>
           </div>
+        </section>
 
-          <div className="mt-6 grid grid-cols-1 gap-6 border-t border-slate-100 pt-6 md:grid-cols-3">
-            {imgSlots.map((slot) => (
-              <div
-                key={slot.key}
-                className="flex flex-col items-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-4"
-              >
-                <span className="mb-2 text-xs font-bold text-slate-600">
-                  {slot.label} <span className="text-red-500">*</span>
-                </span>
-                <div className="mb-3 flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl border border-slate-300 bg-slate-200">
-                  {previews[slot.key] ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={previews[slot.key]}
-                      alt={slot.label}
-                      className={`h-full w-full object-cover ${
-                        fileIds[slot.key] ? "" : "opacity-35"
-                      }`}
-                    />
-                  ) : (
-                    <i className={`fa-solid ${slot.icon} text-3xl text-slate-400`} />
-                  )}
-                </div>
-                <input
-                  type="file"
-                  accept="image/*"
-                  id={`file-${slot.key}`}
-                  className="hidden"
-                  onChange={(e) => onPick(slot.key, e.target.files?.[0] || null)}
-                />
-                <button
-                  type="button"
-                  onClick={() =>
-                    document.getElementById(`file-${slot.key}`)?.click()
-                  }
-                  className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white hover:bg-blue-700"
-                >
-                  เลือกรูปภาพ
-                </button>
+        <section
+          className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7"
+          style={{ animationDelay: "120ms" }}
+        >
+          <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+                3
+              </span>
+              <div>
+                <h2 className="font-display text-lg font-semibold text-slate-900">
+                  รูปหลักฐาน
+                </h2>
+                <p className="text-xs text-slate-500">
+                  อัปโหลดครบ 3 รูป · ตอนนี้ {uploadedCount}/3
+                </p>
               </div>
-            ))}
+            </div>
+            <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="h-full rounded-full bg-amber-400 transition-all"
+                style={{ width: `${(uploadedCount / 3) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {imgSlots.map((slot) => {
+              const done = Boolean(fileIds[slot.key]);
+              const busy = uploading === slot.key;
+              return (
+                <div
+                  key={slot.key}
+                  className={`flex flex-col overflow-hidden rounded-2xl border-2 border-dashed transition ${
+                    done
+                      ? "border-emerald-300 bg-emerald-50/50"
+                      : "border-slate-200 bg-slate-50/80"
+                  }`}
+                >
+                  <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-200/60">
+                    {previews[slot.key] ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={previews[slot.key]}
+                        alt={slot.label}
+                        className={`h-full w-full object-cover transition ${
+                          done ? "" : "opacity-40"
+                        }`}
+                      />
+                    ) : (
+                      <i
+                        className={`fa-solid ${slot.icon} text-4xl text-slate-300`}
+                      />
+                    )}
+                    {done && (
+                      <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-emerald-500 text-white shadow">
+                        <i className="fa-solid fa-check text-xs" />
+                      </span>
+                    )}
+                    {busy && (
+                      <div className="absolute inset-0 grid place-items-center bg-slate-900/40">
+                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2 p-3">
+                    <div>
+                      <p className="text-xs font-bold text-slate-700">
+                        {slot.label}{" "}
+                        <span className="text-rose-500">*</span>
+                      </p>
+                      <p className="text-[11px] text-slate-400">{slot.hint}</p>
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id={`file-${slot.key}`}
+                      className="hidden"
+                      onChange={(e) =>
+                        void onPick(slot.key, e.target.files?.[0] || null)
+                      }
+                    />
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() =>
+                        document.getElementById(`file-${slot.key}`)?.click()
+                      }
+                      className="mt-auto rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
+                    >
+                      <i className="fa-solid fa-camera mr-1.5" />
+                      {done ? "เปลี่ยนรูป" : busy ? "กำลังอัปโหลด..." : "เลือกรูป"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        <div className="flex justify-end pt-2">
-          <Button type="submit" disabled={loading} className="px-8 py-3.5">
-            <i className="fa-solid fa-cloud-arrow-up" />
-            {loading ? "กำลังบันทึก..." : "บันทึกข้อมูลและลงทะเบียน"}
-          </Button>
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+          <div className="mx-auto flex max-w-3xl flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+            <Link
+              href="/"
+              className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+            >
+              <i className="fa-solid fa-arrow-left mr-2" />
+              กลับหน้าแรก
+            </Link>
+            <Button
+              type="submit"
+              disabled={loading || Boolean(uploading)}
+              className="px-8 py-3.5 text-base"
+            >
+              <i className="fa-solid fa-cloud-arrow-up" />
+              {loading ? "กำลังบันทึก..." : "บันทึกและลงทะเบียน"}
+            </Button>
+          </div>
         </div>
       </form>
     </div>

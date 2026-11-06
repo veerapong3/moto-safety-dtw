@@ -14,7 +14,7 @@ const DashboardCharts = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="rounded-2xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-400">
+      <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-10 text-center text-sm text-slate-400">
         กำลังโหลดกราฟ...
       </div>
     ),
@@ -82,72 +82,125 @@ export default function HomePage() {
         toast.error(`ไม่พบทะเบียน ${q} ในระบบ`);
         await swalInfo(
           "ไม่พบข้อมูลทะเบียนนี้ในระบบ",
-          `หมายเลข "${q}" ยังไม่ได้ลงทะเบียน หรืออาจพิมพ์ผิด — ไปที่เมนู "ลงทะเบียน (นักเรียน)" เพื่อบันทึกข้อมูล`,
+          `หมายเลข "${q}" ยังไม่ได้ลงทะเบียน หรืออาจพิมพ์ผิด — ไปที่เมนู "ลงทะเบียน" เพื่อบันทึกข้อมูล`,
         );
       }
     } catch {
       toast.error("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
-      await swalError("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", "โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
+      await swalError(
+        "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้",
+        "โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่",
+      );
     } finally {
       setChecking(false);
     }
   }
 
   return (
-    <div className="space-y-8">
-      <div className="rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white shadow-xl sm:p-8">
-        <div className="max-w-xl">
-          <h2 className="mb-2 text-2xl font-extrabold">
-            <i className="fa-solid fa-magnifying-glass-chart mr-2" />
-            ระบบตรวจสอบการลงทะเบียน
-          </h2>
-          <p className="mb-6 text-sm text-blue-100">
-            ตรวจสอบได้ว่ารถจักรยานยนต์ของคุณได้รับการบันทึกเข้าสู่ระบบสารสนเทศความปลอดภัยของโรงเรียนแล้วหรือยัง
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <input
-              value={plate}
-              onChange={(e) => setPlate(e.target.value)}
-              placeholder="กรอกเลขทะเบียน เช่น ยนร456 (ห้ามเว้นวรรค)"
-              className="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            <button
-              type="button"
-              onClick={checkPlate}
-              disabled={checking}
-              className="rounded-xl bg-yellow-500 px-6 py-3 text-sm font-bold text-slate-900 shadow-md transition hover:bg-yellow-400 disabled:opacity-60"
-            >
-              <i className="fa-solid fa-square-check mr-2" />
-              ตรวจสอบข้อมูล
-            </button>
+    <div className="space-y-10">
+      <section className="relative -mx-4 overflow-hidden sm:-mx-6 lg:-mx-8">
+        <div
+          className="absolute inset-0 bg-[linear-gradient(135deg,var(--hero-from)_0%,var(--hero-via)_48%,var(--hero-to)_100%)]"
+          aria-hidden
+        />
+        <div
+          className="animate-soft-pulse absolute -right-16 top-8 h-56 w-56 rounded-full bg-amber-400/20 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute -left-20 bottom-0 h-48 w-48 rounded-full bg-sky-300/15 blur-3xl"
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "22px 22px",
+          }}
+          aria-hidden
+        />
+
+        <div className="relative mx-auto flex min-h-[min(72vh,640px)] max-w-7xl flex-col justify-center px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+          <div className="animate-fade-up max-w-2xl">
+            <p className="font-display text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
+              MOTO-Safety
+            </p>
+            <p className="mt-2 text-sm font-medium text-blue-100/90 sm:text-base">
+              DTW School · โรงเรียนดอนตาลวิทยา
+            </p>
+            <h1 className="mt-5 max-w-xl text-lg font-semibold leading-snug text-white/95 sm:text-xl">
+              ตรวจสอบว่ามอเตอร์ไซค์ของคุณลงทะเบียนในระบบความปลอดภัยแล้วหรือยัง
+            </h1>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-blue-100/80">
+              พิมพ์เลขทะเบียนแล้วกดตรวจสอบ — หากยังไม่มีในระบบ สามารถลงทะเบียนได้ทันที
+            </p>
+
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-stretch">
+              <label className="sr-only" htmlFor="plate-check">
+                เลขทะเบียนรถ
+              </label>
+              <input
+                id="plate-check"
+                value={plate}
+                onChange={(e) => setPlate(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void checkPlate();
+                }}
+                placeholder="เลขทะเบียน เช่น กข1234"
+                className="w-full rounded-2xl border-0 bg-white px-5 py-3.5 text-base font-semibold text-slate-900 shadow-lg shadow-blue-950/20 placeholder:font-medium placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-amber-300/60"
+              />
+              <button
+                type="button"
+                onClick={() => void checkPlate()}
+                disabled={checking}
+                className="shrink-0 rounded-2xl bg-amber-400 px-7 py-3.5 text-sm font-bold text-slate-900 shadow-lg shadow-amber-900/20 transition hover:bg-amber-300 disabled:opacity-60"
+              >
+                <i className="fa-solid fa-magnifying-glass mr-2" />
+                {checking ? "กำลังตรวจ..." : "ตรวจสอบ"}
+              </button>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link
+                href="/form"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/20"
+              >
+                <i className="fa-solid fa-clipboard-list" />
+                ลงทะเบียนนักเรียน
+              </Link>
+              <span className="text-xs text-blue-100/70">
+                ห้ามเว้นวรรคในเลขทะเบียน
+              </span>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {result && (
         <div
-          className={`rounded-2xl border p-6 shadow-md ${
+          className={`animate-slide-in rounded-2xl border px-5 py-5 sm:px-6 ${
             result.exists
-              ? "border-emerald-500 bg-emerald-50"
-              : "border-rose-500 bg-rose-50"
+              ? "border-emerald-200 bg-emerald-50/90"
+              : "border-rose-200 bg-rose-50/90"
           }`}
         >
           {result.exists ? (
             <div className="flex items-start gap-3">
               <i className="fa-solid fa-circle-check mt-0.5 text-2xl text-emerald-600" />
               <div>
-                <h4 className="text-base font-extrabold text-emerald-800">
-                  พบข้อมูลการลงทะเบียนเสร็จสมบูรณ์
-                </h4>
+                <h2 className="font-display text-lg font-semibold text-emerald-900">
+                  พบข้อมูลการลงทะเบียนแล้ว
+                </h2>
                 <p className="mt-1 text-sm leading-relaxed text-slate-700">
-                  หมายเลขทะเบียน{" "}
-                  <strong className="underline">
+                  หมายเลข{" "}
+                  <strong className="font-bold">
                     {result.plate_number} ({result.province})
                   </strong>{" "}
-                  สี{result.color} ยี่ห้อ {result.brand} ได้รับการยืนยันในระบบแล้ว
+                  สี{result.color} ยี่ห้อ {result.brand} ยืนยันในระบบแล้ว
                 </p>
                 {result.created_at && (
-                  <p className="mt-2 text-xs text-emerald-600/70">
+                  <p className="mt-2 text-xs text-emerald-700/70">
                     วันที่ยืนยัน:{" "}
                     {new Date(result.created_at).toLocaleString("th-TH")}
                   </p>
@@ -158,16 +211,16 @@ export default function HomePage() {
             <div className="flex items-start gap-3">
               <i className="fa-solid fa-circle-xmark mt-0.5 text-2xl text-rose-500" />
               <div>
-                <h4 className="text-base font-extrabold text-rose-800">
-                  ไม่พบข้อมูลทะเบียนนี้ในระบบ
-                </h4>
+                <h2 className="font-display text-lg font-semibold text-rose-900">
+                  ไม่พบทะเบียนนี้ในระบบ
+                </h2>
                 <p className="mt-1 text-sm text-slate-600">
-                  ยังไม่ได้บันทึก หรืออาจพิมพ์ผิด — ไปที่เมนู{" "}
+                  ยังไม่ได้บันทึก หรืออาจพิมพ์ผิด —{" "}
                   <Link
                     href="/form"
-                    className="font-bold text-blue-600 hover:underline"
+                    className="font-bold text-blue-700 hover:underline"
                   >
-                    ลงทะเบียน (นักเรียน)
+                    ไปลงทะเบียน
                   </Link>
                 </p>
               </div>
@@ -176,65 +229,66 @@ export default function HomePage() {
         </div>
       )}
 
-      <div>
-        <h3 className="mb-4 text-xl font-bold text-slate-800">
-          <i className="fa-solid fa-chart-simple mr-2 text-blue-600" />
-          สรุปสถานะข้อมูลความปลอดภัย
-        </h3>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="animate-fade-up space-y-5" style={{ animationDelay: "80ms" }}>
+        <div>
+          <h2 className="font-display text-2xl font-semibold text-slate-900">
+            สรุปความปลอดภัยโรงเรียน
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            ข้อมูลรวมจากรถที่ลงทะเบียนในระบบ MOTO-Safety
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
           {[
             {
-              label: "รถลงทะเบียนทั้งหมด",
+              label: "รถทั้งหมด",
               value: stats?.total ?? "…",
               icon: "fa-motorcycle",
-              color: "bg-blue-50 text-blue-600",
+              tone: "text-blue-700 bg-blue-50",
             },
             {
-              label: "ชั้น ม.ต้น (ม.1-ม.3)",
+              label: "ม.ต้น",
               value: stats?.junior ?? "…",
               icon: "fa-graduation-cap",
-              color: "bg-indigo-50 text-indigo-600",
+              tone: "text-sky-700 bg-sky-50",
             },
             {
-              label: "ชั้น ม.ปลาย (ม.4-ม.6)",
+              label: "ม.ปลาย",
               value: stats?.senior ?? "…",
               icon: "fa-user-graduate",
-              color: "bg-purple-50 text-purple-600",
+              tone: "text-slate-700 bg-slate-100",
             },
             {
-              label: "อัตราการมีหมวกนิรภัย",
+              label: "มีหมวกนิรภัย",
               value: stats ? `${stats.helmetRate}%` : "…",
               icon: "fa-helmet-safety",
-              color: "bg-emerald-50 text-emerald-600",
+              tone: "text-emerald-700 bg-emerald-50",
               sub: stats
-                ? `มีหมวก ${stats.helmetYes} จากทั้งหมด ${stats.total} คน`
-                : "",
+                ? `${stats.helmetYes}/${stats.total} คน`
+                : undefined,
             },
-          ].map((card) => (
+          ].map((item) => (
             <div
-              key={card.label}
-              className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+              key={item.label}
+              className="rounded-2xl border border-slate-200/80 bg-white/90 px-4 py-4 shadow-sm shadow-slate-200/40"
             >
-              <div className={`rounded-xl p-4 ${card.color}`}>
-                <i className={`fa-solid ${card.icon} text-3xl`} />
+              <div
+                className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl ${item.tone}`}
+              >
+                <i className={`fa-solid ${item.icon}`} />
               </div>
-              <div>
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
-                  {card.label}
-                </span>
-                <span className="text-3xl font-extrabold text-slate-800">
-                  {card.value}
-                </span>
-                {card.sub && (
-                  <span className="mt-1 block text-[10px] font-semibold text-slate-400">
-                    {card.sub}
-                  </span>
-                )}
-              </div>
+              <p className="text-xs font-medium text-slate-500">{item.label}</p>
+              <p className="font-display mt-0.5 text-2xl font-semibold tabular-nums text-slate-900 sm:text-3xl">
+                {item.value}
+              </p>
+              {item.sub && (
+                <p className="mt-1 text-[11px] text-slate-400">{item.sub}</p>
+              )}
             </div>
           ))}
         </div>
-      </div>
+      </section>
 
       {stats && <DashboardCharts stats={stats} />}
     </div>

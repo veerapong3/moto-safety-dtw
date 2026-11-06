@@ -1,17 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f3f7fc;
+  --background: #f8fafc;
   --foreground: #0f172a;
-  --muted: #e8eef7;
-  --border: #dbe7f5;
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --accent: #22c55e;
-  --surface: #ffffff;
-  --hero-from: #0b1f4d;
-  --hero-via: #1e40af;
-  --hero-to: #2563eb;
+  --muted: #f1f5f9;
+  --border: #e2e8f0;
+  --primary: #1e40af;
+  --primary-dark: #1e3a8a;
 }
 
 @theme inline {
@@ -21,19 +16,13 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-dark: var(--primary-dark);
-  --color-accent: var(--accent);
   --font-sans: var(--font-sarabun);
-  --font-display: var(--font-kanit);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sarabun), system-ui, sans-serif;
-}
-
-.font-display {
-  font-family: var(--font-kanit), var(--font-sarabun), sans-serif;
 }
 
 * {
@@ -61,83 +50,4 @@ body {
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-@keyframes softPulse {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.75;
-    transform: scale(1.04);
-  }
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-up {
-  animation: fadeUp 0.55s ease-out both;
-}
-
-.animate-slide-in {
-  animation: slideIn 0.4s ease-out both;
-}
-
-.animate-soft-pulse {
-  animation: softPulse 4.5s ease-in-out infinite;
-}
-
-@keyframes motoIn {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-  to {
-    opacity: 0.9;
-    transform: translateX(0);
-  }
-}
-
-@keyframes laneMove {
-  from {
-    background-position: 0 0;
-  }
-  to {
-    background-position: 80px 0;
-  }
-}
-
-.animate-moto-in {
-  animation: motoIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.home-road {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(15, 23, 42, 0.35) 30%,
-    rgba(2, 6, 23, 0.85) 100%
-  );
-}
-
-.home-lane {
-  background-image: repeating-linear-gradient(
-    90deg,
-    rgba(251, 191, 36, 0.85) 0 36px,
-    transparent 36px 72px
-  );
-  animation: laneMove 1.1s linear infinite;
-  opacity: 0.55;
-  mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent);
 }

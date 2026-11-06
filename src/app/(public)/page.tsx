@@ -237,6 +237,32 @@ export default function HomePage() {
       </div>
 
       {stats && <DashboardCharts stats={stats} />}
+
+      <div className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-700 to-sky-600 p-6 text-white shadow-md sm:p-7">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 text-xl">
+              <i className="fa-solid fa-clipboard-list" />
+            </span>
+            <div>
+              <h3 className="text-lg font-extrabold sm:text-xl">
+                ยังไม่มีข้อมูลในระบบใช่ไหม?
+              </h3>
+              <p className="mt-1 max-w-xl text-sm leading-relaxed text-blue-100">
+                หากตรวจสอบทะเบียนแล้วไม่พบ หรือยังไม่ได้บันทึก —
+                ลงทะเบียนรถจักรยานยนต์และข้อมูลหมวกนิรภัยได้ทันที
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/form"
+            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-yellow-400 px-6 py-3.5 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-300"
+          >
+            <i className="fa-solid fa-pen-to-square" />
+            ลงทะเบียนเลย
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

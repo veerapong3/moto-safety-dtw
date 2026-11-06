@@ -222,31 +222,43 @@ export default function HomePage() {
           <i className="fa-solid fa-chart-simple mr-2 text-blue-600" />
           สรุปสถานะข้อมูลความปลอดภัย
         </h3>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
           {[
             {
               label: "รถลงทะเบียนทั้งหมด",
               value: stats?.total ?? "…",
               icon: "fa-motorcycle",
-              color: "bg-blue-50 text-blue-600",
+              wrap: "border-blue-200/70 bg-gradient-to-br from-blue-50 via-white to-sky-50",
+              iconBox:
+                "bg-gradient-to-br from-blue-600 to-sky-500 text-white shadow-blue-600/25",
+              valueColor: "text-blue-800",
             },
             {
               label: "ชั้น ม.ต้น (ม.1-ม.3)",
               value: stats?.junior ?? "…",
               icon: "fa-graduation-cap",
-              color: "bg-indigo-50 text-indigo-600",
+              wrap: "border-cyan-200/70 bg-gradient-to-br from-cyan-50 via-white to-teal-50",
+              iconBox:
+                "bg-gradient-to-br from-cyan-600 to-teal-500 text-white shadow-cyan-600/25",
+              valueColor: "text-cyan-900",
             },
             {
               label: "ชั้น ม.ปลาย (ม.4-ม.6)",
               value: stats?.senior ?? "…",
               icon: "fa-user-graduate",
-              color: "bg-purple-50 text-purple-600",
+              wrap: "border-amber-200/70 bg-gradient-to-br from-amber-50 via-white to-orange-50",
+              iconBox:
+                "bg-gradient-to-br from-amber-500 to-orange-500 text-white shadow-amber-500/25",
+              valueColor: "text-amber-900",
             },
             {
               label: "อัตราการมีหมวกนิรภัย",
               value: stats ? `${stats.helmetRate}%` : "…",
               icon: "fa-helmet-safety",
-              color: "bg-emerald-50 text-emerald-600",
+              wrap: "border-emerald-200/70 bg-gradient-to-br from-emerald-50 via-white to-green-50",
+              iconBox:
+                "bg-gradient-to-br from-emerald-600 to-green-500 text-white shadow-emerald-600/25",
+              valueColor: "text-emerald-800",
               sub: stats
                 ? `มีหมวก ${stats.helmetYes} จากทั้งหมด ${stats.total} คน`
                 : "",
@@ -254,20 +266,30 @@ export default function HomePage() {
           ].map((card) => (
             <div
               key={card.label}
-              className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm"
+              className={`relative flex items-center gap-4 overflow-hidden rounded-2xl border p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${card.wrap}`}
             >
-              <div className={`rounded-xl p-4 ${card.color}`}>
-                <i className={`fa-solid ${card.icon} text-3xl`} />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -right-3 -top-3 text-6xl opacity-[0.07]"
+              >
+                <i className={`fa-solid ${card.icon}`} />
               </div>
-              <div>
-                <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <div
+                className={`relative grid h-14 w-14 shrink-0 place-items-center rounded-2xl shadow-lg ${card.iconBox}`}
+              >
+                <i className={`fa-solid ${card.icon} text-xl`} />
+              </div>
+              <div className="relative min-w-0">
+                <span className="block text-[11px] font-semibold tracking-wide text-slate-500">
                   {card.label}
                 </span>
-                <span className="text-3xl font-extrabold text-slate-800">
+                <span
+                  className={`mt-0.5 block text-3xl font-extrabold tabular-nums ${card.valueColor}`}
+                >
                   {card.value}
                 </span>
                 {card.sub && (
-                  <span className="mt-1 block text-[10px] font-semibold text-slate-400">
+                  <span className="mt-1 block text-[10px] font-semibold text-emerald-700/70">
                     {card.sub}
                   </span>
                 )}

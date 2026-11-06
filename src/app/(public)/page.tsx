@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { timedFetch } from "@/lib/perf-client";
+import { swalError, swalInfo, swalSuccess, swalWarning } from "@/lib/swal";
 import type { DashboardStats } from "@/lib/types";
 
 const DashboardCharts = dynamic(
@@ -46,21 +47,47 @@ export default function HomePage() {
     const q = plate.trim().replace(/\s+/g, "");
     if (!q) {
       toast.warning("กรุณากรอกเลขทะเบียนก่อนกดตรวจสอบข้อมูล");
+      await swalWarning(
+        "ยังไม่ได้กรอกเลขทะเบียน",
+        "กรุณาพิมพ์เลขทะเบียนรถ เช่น กข1234 แล้วกดตรวจสอบอีกครั้ง",
+      );
       return;
     }
     setChecking(true);
+    toast.message(`กำลังตรวจสอบทะเบียน ${q}...`);
     try {
       const res = await timedFetch(
         `/api/registrations/check-plate?q=${encodeURIComponent(q)}`,
       );
-      const data = await res.json();
+      const data = (await res.json()) as PlateResult & { error?: string };
       if (!res.ok) {
         toast.error(data.error || "ตรวจสอบไม่สำเร็จ");
+        await swalError("ตรวจสอบไม่สำเร็จ", data.error || "ลองใหม่อีกครั้ง");
         return;
       }
       setResult(data);
+      if (data.exists) {
+        const detail = [
+          `ทะเบียน ${data.plate_number} (${data.province})`,
+          `ยี่ห้อ ${data.brand} · สี${data.color}`,
+          data.created_at
+            ? `วันที่ยืนยัน ${new Date(data.created_at).toLocaleString("th-TH")}`
+            : "",
+        ]
+          .filter(Boolean)
+          .join("\n");
+        toast.success(`พบทะเบียน ${data.plate_number} ในระบบแล้ว`);
+        await swalSuccess("พบข้อมูลการลงทะเบียน", detail);
+      } else {
+        toast.error(`ไม่พบทะเบียน ${q} ในระบบ`);
+        await swalInfo(
+          "ไม่พบข้อมูลทะเบียนนี้ในระบบ",
+          `หมายเลข "${q}" ยังไม่ได้ลงทะเบียน หรืออาจพิมพ์ผิด — ไปที่เมนู "ลงทะเบียน (นักเรียน)" เพื่อบันทึกข้อมูล`,
+        );
+      }
     } catch {
       toast.error("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้");
+      await swalError("เชื่อมต่อเซิร์ฟเวอร์ไม่ได้", "โปรดตรวจสอบอินเทอร์เน็ตแล้วลองใหม่");
     } finally {
       setChecking(false);
     }

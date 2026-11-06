@@ -110,6 +110,14 @@ async function main() {
     ["COLORS", "แดง,น้ำเงิน,ดำ,ขาว,เทา,เหลือง,เขียว,หลายสี/อื่นๆ"],
     ["APP_TITLE", "MOTO-Safety DTW_School"],
     ["SCHOOL_NAME", "โรงเรียนดอนตาลวิทยา"],
+    ["CURRENT_ACADEMIC_YEAR", String(new Date().getFullYear() + 543)],
+    [
+      "CURRENT_SEMESTER",
+      (() => {
+        const m = new Date().getMonth() + 1;
+        return m >= 5 && m <= 10 ? "1" : "2";
+      })(),
+    ],
     [
       "CLOSED_MESSAGE",
       "ขณะนี้ระบบปิดรับข้อมูลชั่วคราว เพื่อสรุปสถิติหรือปรับปรุงฐานข้อมูล",

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { timedFetch } from "@/lib/perf-client";
 import { swalError, swalInfo, swalSuccess, swalWarning } from "@/lib/swal";
-import type { DashboardStats } from "@/lib/types";
+import type { DashboardStats, PublicConfig } from "@/lib/types";
 
 const DashboardCharts = dynamic(
   () =>
@@ -32,6 +32,7 @@ type PlateResult = {
 
 export default function HomePage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [config, setConfig] = useState<PublicConfig | null>(null);
   const [plate, setPlate] = useState("");
   const [result, setResult] = useState<PlateResult | null>(null);
   const [checking, setChecking] = useState(false);
@@ -41,6 +42,10 @@ export default function HomePage() {
       .then((r) => r.json())
       .then((d) => setStats(d))
       .catch(() => toast.error("โหลดสถิติไม่สำเร็จ"));
+    timedFetch("/api/config")
+      .then((r) => r.json())
+      .then((d: PublicConfig) => setConfig(d))
+      .catch(() => undefined);
   }, []);
 
   async function checkPlate() {
@@ -95,8 +100,44 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <div className="rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white shadow-xl sm:p-8">
-        <div className="max-w-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white shadow-xl sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-8 text-[11rem] leading-none text-white/[0.07] sm:text-[14rem]"
+        >
+          <i className="fa-solid fa-motorcycle" />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -bottom-10 right-16 text-[7rem] leading-none text-white/[0.05] sm:right-40"
+        >
+          <i className="fa-solid fa-helmet-safety" />
+        </div>
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-[0.12]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+
+        <div className="relative max-w-xl">
+          <div className="mb-3 flex flex-wrap gap-2">
+            {config?.academicYear && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-blue-50 backdrop-blur-sm">
+                <i className="fa-solid fa-calendar-days text-[10px] opacity-80" />
+                ปีการศึกษา {config.academicYear}
+              </span>
+            )}
+            {config?.semester && (
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold text-blue-50 backdrop-blur-sm">
+                <i className="fa-solid fa-book-open text-[10px] opacity-80" />
+                ภาคเรียนที่ {config.semester}
+              </span>
+            )}
+          </div>
           <h2 className="mb-2 text-2xl font-extrabold">
             <i className="fa-solid fa-magnifying-glass-chart mr-2" />
             ระบบตรวจสอบการลงทะเบียน

@@ -212,6 +212,12 @@ export async function getDriveRootFolderId(): Promise<string> {
   return id;
 }
 
+function defaultSemester(): string {
+  const month = new Date().getMonth() + 1;
+  // ภาคเรียนที่ 1 โดยทั่วไป พ.ค.–ต.ค. · ภาคเรียนที่ 2 พ.ย.–เม.ย.
+  return month >= 5 && month <= 10 ? "1" : "2";
+}
+
 export async function getPublicConfig(): Promise<PublicConfig> {
   const cached = cacheGet<PublicConfig>("public:config");
   if (cached) return cached;
@@ -248,7 +254,9 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     schoolName: map.SCHOOL_NAME || "โรงเรียนดอนตาลวิทยา",
     appTitle: map.APP_TITLE || "MOTO-Safety DTW_School",
     contactEmail: map.CONTACT_EMAIL || "",
-    academicYear: map.CURRENT_ACADEMIC_YEAR || "",
+    academicYear:
+      map.CURRENT_ACADEMIC_YEAR || String(new Date().getFullYear() + 543),
+    semester: map.CURRENT_SEMESTER || defaultSemester(),
   };
   cacheSet("public:config", config, 60_000);
   return config;

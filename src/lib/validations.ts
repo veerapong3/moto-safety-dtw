@@ -42,6 +42,7 @@ export const settingsUpdateSchema = z.object({
   APP_TITLE: z.string().optional(),
   CONTACT_EMAIL: z.string().optional(),
   CURRENT_ACADEMIC_YEAR: z.string().optional(),
+  CURRENT_SEMESTER: z.string().optional(),
   DRIVE_ROOT_FOLDER_ID: z.string().optional(),
 });
 

@@ -64,6 +64,7 @@ export interface PublicConfig {
   appTitle: string;
   contactEmail: string;
   academicYear: string;
+  semester: string;
 }
 
 export interface DashboardStats {

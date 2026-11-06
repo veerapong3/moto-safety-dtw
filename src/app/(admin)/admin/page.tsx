@@ -97,6 +97,7 @@ export default function AdminPage() {
           CLOSED_MESSAGE: settings.CLOSED_MESSAGE ?? "",
           CONTACT_EMAIL: settings.CONTACT_EMAIL ?? "",
           CURRENT_ACADEMIC_YEAR: settings.CURRENT_ACADEMIC_YEAR ?? "",
+          CURRENT_SEMESTER: settings.CURRENT_SEMESTER ?? "",
           DRIVE_ROOT_FOLDER_ID: settings.DRIVE_ROOT_FOLDER_ID ?? "",
         }),
       });
@@ -423,7 +424,7 @@ export default function AdminPage() {
               ["ROOMS", "ห้องเรียน (คั่นด้วย ,)"],
               ["BRANDS", "ยี่ห้อรถ (คั่นด้วย ,)"],
               ["COLORS", "สีรถ (คั่นด้วย ,)"],
-              ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา"],
+              ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา (เช่น 2569)"],
               ["CONTACT_EMAIL", "อีเมลติดต่อ"],
               ["CLOSED_MESSAGE", "ข้อความตอนปิดระบบ"],
               ["DRIVE_ROOT_FOLDER_ID", "Drive Root Folder ID"],
@@ -438,6 +439,22 @@ export default function AdminPage() {
               />
             </Field>
           ))}
+
+          <Field label="ภาคเรียน">
+            <Select
+              value={settings.CURRENT_SEMESTER || ""}
+              onChange={(e) =>
+                setSettings((s) => ({
+                  ...s,
+                  CURRENT_SEMESTER: e.target.value,
+                }))
+              }
+            >
+              <option value="">-- เลือกภาคเรียน --</option>
+              <option value="1">ภาคเรียนที่ 1</option>
+              <option value="2">ภาคเรียนที่ 2</option>
+            </Select>
+          </Field>
 
           <div className="space-y-3 border-t border-slate-100 pt-4">
             <h4 className="text-sm font-bold text-slate-700">รูปตัวอย่างฟอร์ม</h4>

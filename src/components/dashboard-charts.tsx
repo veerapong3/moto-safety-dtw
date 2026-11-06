@@ -22,29 +22,29 @@ ChartJS.register(
 );
 
 export function DashboardCharts({ stats }: { stats: DashboardStats }) {
+  const grades = Object.keys(stats.byGrade);
+  const values = Object.values(stats.byGrade);
+
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm lg:col-span-2">
-        <h3 className="mb-6 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-          จำนวนรถจักรยานยนต์แยกตามระดับชั้น
+    <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="lg:col-span-2">
+        <h3 className="mb-5 font-display text-lg font-semibold text-slate-800">
+          จำนวนรถแยกตามระดับชั้น
         </h3>
         <div className="relative h-[300px] w-full">
           <Bar
             data={{
-              labels: Object.keys(stats.byGrade),
+              labels: grades,
               datasets: [
                 {
                   label: "จำนวนรถ (คัน)",
-                  data: Object.values(stats.byGrade),
-                  backgroundColor: [
-                    "rgba(59, 130, 246, 0.7)",
-                    "rgba(99, 102, 241, 0.7)",
-                    "rgba(139, 92, 246, 0.7)",
-                    "rgba(168, 85, 247, 0.7)",
-                    "rgba(236, 72, 153, 0.7)",
-                    "rgba(244, 63, 94, 0.7)",
-                  ],
-                  borderRadius: 8,
+                  data: values,
+                  backgroundColor: grades.map((_, i) =>
+                    i % 2 === 0
+                      ? "rgba(29, 78, 216, 0.78)"
+                      : "rgba(245, 158, 11, 0.78)",
+                  ),
+                  borderRadius: 4,
                 },
               ],
             }}
@@ -53,35 +53,53 @@ export function DashboardCharts({ stats }: { stats: DashboardStats }) {
               maintainAspectRatio: false,
               plugins: { legend: { display: false } },
               scales: {
-                y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                x: {
+                  grid: { display: false },
+                  ticks: { font: { family: "Kanit, Sarabun, sans-serif" } },
+                },
+                y: {
+                  beginAtZero: true,
+                  ticks: { stepSize: 1 },
+                  grid: { color: "rgba(148,163,184,0.25)" },
+                },
               },
             }}
           />
         </div>
       </div>
-      <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-        <h3 className="mb-6 border-b border-slate-100 pb-4 text-lg font-bold text-slate-800">
-          สัดส่วนความปลอดภัยหมวกนิรภัย
+
+      <div>
+        <h3 className="mb-5 font-display text-lg font-semibold text-slate-800">
+          สัดส่วนหมวกนิรภัย
         </h3>
         <div className="relative flex h-[300px] w-full items-center justify-center">
           <Doughnut
             data={{
-              labels: ["มีหมวกนิรภัย", "ไม่มีหมวกนิรภัย"],
+              labels: ["มีหมวก", "ไม่มีหมวก"],
               datasets: [
                 {
                   data: [stats.helmetYes, stats.helmetNo],
                   backgroundColor: [
-                    "rgba(16, 185, 129, 0.85)",
-                    "rgba(244, 63, 94, 0.85)",
+                    "rgba(5, 150, 105, 0.9)",
+                    "rgba(225, 29, 72, 0.85)",
                   ],
+                  borderWidth: 0,
                 },
               ],
             }}
             options={{
               responsive: true,
               maintainAspectRatio: false,
-              cutout: "65%",
-              plugins: { legend: { position: "bottom" } },
+              cutout: "68%",
+              plugins: {
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    boxWidth: 12,
+                    font: { family: "Sarabun, sans-serif", size: 12 },
+                  },
+                },
+              },
             }}
           />
         </div>

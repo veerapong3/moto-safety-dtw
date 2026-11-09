@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const steps = [
@@ -5,6 +6,8 @@ const steps = [
     n: 1,
     title: "ข้อมูลส่วนตัวนักเรียน",
     desc: "กรอกตามบัตรนักเรียนให้ตรงทุกช่อง",
+    image: "/guide/02-student.png",
+    imageAlt: "ตัวอย่างส่วนข้อมูลส่วนตัวนักเรียน",
     items: [
       {
         label: "คำนำหน้า / ชื่อ / นามสกุล",
@@ -28,6 +31,8 @@ const steps = [
     n: 2,
     title: "ข้อมูลรถและการใช้งาน",
     desc: "ดูจากป้ายทะเบียนและตัวรถจริงก่อนกรอก",
+    image: "/guide/03-bike.png",
+    imageAlt: "ตัวอย่างส่วนข้อมูลรถและหมวกนิรภัย",
     items: [
       {
         label: "ยี่ห้อและสีรถ",
@@ -55,6 +60,8 @@ const steps = [
     n: 3,
     title: "รูปหลักฐาน 3 รูป",
     desc: "ต้องอัปโหลดครบทั้ง 3 รูปก่อนกดบันทึก",
+    image: "/guide/04-photos.png",
+    imageAlt: "ตัวอย่างส่วนอัปโหลดรูปหลักฐาน 3 รูป",
     items: [
       {
         label: "รูปรถจักรยานยนต์",
@@ -96,7 +103,7 @@ export default function GuidePage() {
     <div className="mx-auto max-w-3xl space-y-6 pb-16">
       <header className="overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-8 text-white shadow-lg shadow-blue-900/20 sm:px-8">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/90">
-          คู่มือนักเรียน
+          คู่มือนักเรียน · อ่านได้โดยไม่ต้องเข้าสู่ระบบ
         </p>
         <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
           วิธีกรอกแบบฟอร์ม MOTO-Safety
@@ -122,6 +129,27 @@ export default function GuidePage() {
           </Link>
         </div>
       </header>
+
+      <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+        <div className="border-b border-slate-100 px-5 py-4 sm:px-7">
+          <h2 className="font-display text-lg font-semibold text-slate-900">
+            ภาพรวมหน้าลงทะเบียน
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">
+            หน้านี้เปิดให้อ่านได้ทุกคน ไม่ต้อง login
+          </p>
+        </div>
+        <div className="bg-slate-50 p-3 sm:p-4">
+          <Image
+            src="/guide/01-overview.png"
+            alt="ภาพรวมหน้าลงทะเบียน MOTO-Safety"
+            width={768}
+            height={287}
+            className="h-auto w-full rounded-2xl border border-slate-200 bg-white shadow-sm"
+            priority
+          />
+        </div>
+      </section>
 
       <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
         <h2 className="font-display text-lg font-semibold text-slate-900">
@@ -158,9 +186,9 @@ export default function GuidePage() {
       {steps.map((step) => (
         <section
           key={step.n}
-          className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7"
+          className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm"
         >
-          <div className="mb-5 flex items-start gap-3">
+          <div className="flex items-start gap-3 px-5 py-5 sm:px-7">
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
               {step.n}
             </span>
@@ -171,7 +199,18 @@ export default function GuidePage() {
               <p className="mt-0.5 text-xs text-slate-500">{step.desc}</p>
             </div>
           </div>
-          <div className="space-y-3">
+
+          <div className="bg-slate-50 px-3 pb-3 sm:px-4 sm:pb-4">
+            <Image
+              src={step.image}
+              alt={step.imageAlt}
+              width={768}
+              height={400}
+              className="h-auto w-full rounded-2xl border border-slate-200 bg-white shadow-sm"
+            />
+          </div>
+
+          <div className="space-y-3 px-5 py-5 sm:px-7">
             {step.items.map((item) => (
               <div
                 key={item.label}

@@ -6,6 +6,7 @@ const SESSION_COOKIE = "motosafety_session";
 const PUBLIC_PATHS = [
   "/",
   "/form",
+  "/guide",
   "/system-closed",
   "/login",
   "/api/auth/login",

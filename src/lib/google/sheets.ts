@@ -65,30 +65,6 @@ function normalizeStudentId(value: string): string {
   return digits || raw;
 }
 
-/**
- * Force Google Sheets to store a value as text so leading zeros
- * (Thai phone numbers like 0812345678) are not stripped.
- */
-function asSheetText(value: string): string {
-  const v = String(value ?? "").trim();
-  if (!v) return "";
-  return v.startsWith("'") ? v : `'${v}`;
-}
-
-function fromSheetText(value: string): string {
-  return String(value ?? "")
-    .replace(/^'/, "")
-    .trim();
-}
-
-/** Restore a Thai phone if Sheets previously dropped the leading 0. */
-function normalizeThaiPhone(value: string): string {
-  let phone = fromSheetText(value).replace(/\D/g, "");
-  // Mobile without leading 0 → 9 digits starting with 6/8/9
-  if (/^[689]\d{8}$/.test(phone)) phone = `0${phone}`;
-  return phone;
-}
-
 function rowsToObjects<T extends string>(
   headers: readonly T[],
   rows: string[][],

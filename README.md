@@ -32,7 +32,8 @@ npm run dev
 
 4. Deploy: push GitHub → Import Vercel → ใส่ Environment Variables
 
-รายละเอียด schema: [docs/SHEET_SCHEMA.md](docs/SHEET_SCHEMA.md)
+รายละเอียด schema: [docs/SHEET_SCHEMA.md](docs/SHEET_SCHEMA.md)  
+คู่มือนักเรียน: [docs/STUDENT-GUIDE.md](docs/STUDENT-GUIDE.md) · หน้าเว็บ `/guide`
 
 ## ความปลอดภัย (อย่า commit)
 

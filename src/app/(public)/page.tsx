@@ -162,6 +162,22 @@ export default function HomePage() {
               ตรวจสอบข้อมูล
             </button>
           </div>
+          <p className="mt-4 text-sm text-blue-100/90">
+            ยังไม่เคยลงทะเบียน?{" "}
+            <Link
+              href="/guide"
+              className="font-bold text-yellow-300 underline-offset-2 hover:underline"
+            >
+              อ่านคู่มือการกรอกก่อน
+            </Link>{" "}
+            หรือ{" "}
+            <Link
+              href="/form"
+              className="font-bold text-yellow-300 underline-offset-2 hover:underline"
+            >
+              ไปหน้าลงทะเบียน
+            </Link>
+          </p>
         </div>
       </div>
 
@@ -301,29 +317,52 @@ export default function HomePage() {
 
       {stats && <DashboardCharts stats={stats} />}
 
-      <div className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-700 to-sky-600 p-6 text-white shadow-md sm:p-7">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-100 text-xl text-blue-700">
+              <i className="fa-solid fa-book-open" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-extrabold text-slate-900">
+                คู่มือการกรอกสำหรับนักเรียน
+              </h3>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                อ่านวิธีกรอกข้อมูล รูปแบบทะเบียน และตัวอย่างรูปหลักฐานก่อนเริ่มลงทะเบียน
+              </p>
+              <Link
+                href="/guide"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
+              >
+                <i className="fa-solid fa-book-open" />
+                เปิดคู่มือ
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-700 to-sky-600 p-6 text-white shadow-md">
           <div className="flex items-start gap-4">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 text-xl">
               <i className="fa-solid fa-clipboard-list" />
             </span>
-            <div>
-              <h3 className="text-lg font-extrabold sm:text-xl">
+            <div className="min-w-0 flex-1">
+              <h3 className="text-lg font-extrabold">
                 ยังไม่มีข้อมูลในระบบใช่ไหม?
               </h3>
-              <p className="mt-1 max-w-xl text-sm leading-relaxed text-blue-100">
+              <p className="mt-1 text-sm leading-relaxed text-blue-100">
                 หากตรวจสอบทะเบียนแล้วไม่พบ หรือยังไม่ได้บันทึก —
-                ลงทะเบียนรถจักรยานยนต์และข้อมูลหมวกนิรภัยได้ทันที
+                ลงทะเบียนรถจักรยานยนต์ได้ทันที
               </p>
+              <Link
+                href="/form"
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-yellow-400 px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-yellow-300"
+              >
+                <i className="fa-solid fa-pen-to-square" />
+                ลงทะเบียนเลย
+              </Link>
             </div>
           </div>
-          <Link
-            href="/form"
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-yellow-400 px-6 py-3.5 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-yellow-300"
-          >
-            <i className="fa-solid fa-pen-to-square" />
-            ลงทะเบียนเลย
-          </Link>
         </div>
       </div>
     </div>

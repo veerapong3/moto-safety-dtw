@@ -1,0 +1,247 @@
+import Link from "next/link";
+
+const steps = [
+  {
+    n: 1,
+    title: "ข้อมูลส่วนตัวนักเรียน",
+    desc: "กรอกตามบัตรนักเรียนให้ตรงทุกช่อง",
+    items: [
+      {
+        label: "คำนำหน้า / ชื่อ / นามสกุล",
+        tip: "เลือกคำนำหน้าให้ถูกต้อง แล้วพิมพ์ชื่อ–นามสกุลเป็นภาษาไทย",
+      },
+      {
+        label: "เลขประจำตัวนักเรียน",
+        tip: "ใส่เฉพาะตัวเลขเท่านั้น ห้ามมีช่องว่างหรือตัวอักษร",
+      },
+      {
+        label: "ระดับชั้นและห้องเรียน",
+        tip: "เลือกจากรายการที่ระบบเปิดให้เท่านั้น",
+      },
+      {
+        label: "เบอร์โทรศัพท์ติดต่อ",
+        tip: "ใส่ตัวเลข 9–10 หลัก เช่น 0891234567 ไม่ต้องใส่ขีด",
+      },
+    ],
+  },
+  {
+    n: 2,
+    title: "ข้อมูลรถและการใช้งาน",
+    desc: "ดูจากป้ายทะเบียนและตัวรถจริงก่อนกรอก",
+    items: [
+      {
+        label: "ยี่ห้อและสีรถ",
+        tip: "เลือกจากรายการให้ตรงกับรถที่ใช้มาโรงเรียน",
+      },
+      {
+        label: "หมายเลขทะเบียน",
+        tip: "พิมพ์ติดกัน ไม่เว้นวรรค เช่น กข1234 หรือ ยนร456 (พยัญชนะไทย 2–3 ตัว ตามด้วยตัวเลข)",
+      },
+      {
+        label: "จังหวัดที่จดทะเบียน",
+        tip: "เลือกจังหวัดที่เขียนบนป้ายทะเบียนจริง",
+      },
+      {
+        label: "หมวกนิรภัย",
+        tip: "เลือก “มี” หรือ “ไม่มี” ตามความเป็นจริง",
+      },
+      {
+        label: "ชื่อผู้ซ้อนท้ายประจำ",
+        tip: "ถ้าไม่มีผู้ซ้อนท้ายประจำ ให้เว้นว่างได้",
+      },
+    ],
+  },
+  {
+    n: 3,
+    title: "รูปหลักฐาน 3 รูป",
+    desc: "ต้องอัปโหลดครบทั้ง 3 รูปก่อนกดบันทึก",
+    items: [
+      {
+        label: "รูปรถจักรยานยนต์",
+        tip: "ถ่ายทั้งคันให้เห็นชัด แสงพอ ไม่มืดเกินไป",
+      },
+      {
+        label: "รูปป้ายทะเบียน",
+        tip: "ตัวอักษรและตัวเลขต้องอ่านได้ชัด ไม่เบลอ",
+      },
+      {
+        label: "รูปผู้ขับขี่",
+        tip: "หน้าตรง ถ้ามีหมวกให้สวมขณะถ่ายได้",
+      },
+    ],
+  },
+] as const;
+
+const mistakes = [
+  {
+    bad: "ทะเบียนมีช่องว่าง เช่น กข 1234",
+    good: "พิมพ์ติดกัน กข1234",
+  },
+  {
+    bad: "เบอร์โทรมีขีด เช่น 089-123-4567",
+    good: "ใส่เฉพาะตัวเลข 0891234567",
+  },
+  {
+    bad: "อัปโหลดรูปไม่ครบแล้วกดบันทึก",
+    good: "รอจนครบ 3/3 และมีเครื่องหมายถูกสีเขียว",
+  },
+  {
+    bad: "ลงทะเบียนทะเบียนซ้ำกับที่มีในระบบแล้ว",
+    good: "ตรวจทะเบียนที่หน้าแรกก่อน หากพบแล้วไม่ต้องลงซ้ำ",
+  },
+] as const;
+
+export default function GuidePage() {
+  return (
+    <div className="mx-auto max-w-3xl space-y-6 pb-16">
+      <header className="overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-8 text-white shadow-lg shadow-blue-900/20 sm:px-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/90">
+          คู่มือนักเรียน
+        </p>
+        <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+          วิธีกรอกแบบฟอร์ม MOTO-Safety
+        </h1>
+        <p className="mt-3 max-w-xl text-sm leading-relaxed text-blue-100/90">
+          อ่านก่อนกรอก 1–2 นาที จะช่วยให้ลงทะเบียนสำเร็จเร็วขึ้น
+          และลดโอกาสกรอกผิดหรืออัปโหลดรูปไม่ครบ
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/form"
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
+          >
+            <i className="fa-solid fa-pen-to-square" />
+            ไปหน้าลงทะเบียน
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/15"
+          >
+            <i className="fa-solid fa-magnifying-glass" />
+            ตรวจทะเบียนก่อน
+          </Link>
+        </div>
+      </header>
+
+      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+        <h2 className="font-display text-lg font-semibold text-slate-900">
+          ก่อนเริ่มกรอก
+        </h2>
+        <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
+          <li className="flex gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+              1
+            </span>
+            เตรียมบัตรนักเรียน เบอร์โทรติดต่อ และดูป้ายทะเบียนให้ชัด
+          </li>
+          <li className="flex gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+              2
+            </span>
+            ถ่ายรูปไว้ล่วงหน้า 3 รูป: รถทั้งคัน ป้ายทะเบียน และผู้ขับขี่
+          </li>
+          <li className="flex gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+              3
+            </span>
+            ใช้มือถือหรือคอมพิวเตอร์ที่เชื่อมอินเทอร์เน็ตได้เสถียร
+          </li>
+          <li className="flex gap-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+              4
+            </span>
+            ถ้าไม่แน่ใจว่ารถลงทะเบียนแล้วหรือยัง ให้ไปหน้าแรกกด “ตรวจสอบข้อมูล” ก่อน
+          </li>
+        </ul>
+      </section>
+
+      {steps.map((step) => (
+        <section
+          key={step.n}
+          className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7"
+        >
+          <div className="mb-5 flex items-start gap-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+              {step.n}
+            </span>
+            <div>
+              <h2 className="font-display text-lg font-semibold text-slate-900">
+                {step.title}
+              </h2>
+              <p className="mt-0.5 text-xs text-slate-500">{step.desc}</p>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {step.items.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+              >
+                <p className="text-sm font-bold text-slate-800">{item.label}</p>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  {item.tip}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+
+      <section className="rounded-3xl border border-amber-200/80 bg-amber-50/60 p-5 shadow-sm sm:p-7">
+        <h2 className="font-display text-lg font-semibold text-slate-900">
+          <i className="fa-solid fa-triangle-exclamation mr-2 text-amber-500" />
+          จุดที่มักกรอกผิด
+        </h2>
+        <div className="mt-4 space-y-3">
+          {mistakes.map((m) => (
+            <div
+              key={m.bad}
+              className="grid gap-2 rounded-2xl border border-amber-100 bg-white px-4 py-3 sm:grid-cols-2"
+            >
+              <p className="text-sm text-rose-700">
+                <span className="font-bold">ผิด:</span> {m.bad}
+              </p>
+              <p className="text-sm text-emerald-700">
+                <span className="font-bold">ถูก:</span> {m.good}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
+        <h2 className="font-display text-lg font-semibold text-slate-900">
+          หลังกดบันทึกแล้วทำอะไรต่อ
+        </h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+          <li>ถ้าสำเร็จ ระบบจะแจ้ง “ลงทะเบียนสำเร็จ”</li>
+          <li>
+            กลับหน้าแรก แล้วพิมพ์เลขทะเบียนเดิมอีกครั้งเพื่อยืนยันว่าพบในระบบ
+          </li>
+          <li>
+            หากขึ้นว่า “หมายเลขทะเบียนนี้มีในระบบแล้ว” แปลว่ารถคันนี้ลงทะเบียนไปแล้ว
+            ไม่ต้องกรอกซ้ำ
+          </li>
+          <li>
+            หากระบบปิดรับลงทะเบียนชั่วคราว ให้รอประกาศจากโรงเรียนแล้วค่อยกลับมาใหม่
+          </li>
+        </ol>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/form"
+            className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
+          >
+            <i className="fa-solid fa-arrow-right" />
+            เริ่มกรอกแบบฟอร์ม
+          </Link>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+          >
+            กลับหน้าแรก
+          </Link>
+        </div>
+      </section>
+    </div>
+  );
+}

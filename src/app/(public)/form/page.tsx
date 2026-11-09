@@ -202,6 +202,13 @@ export default function FormPage() {
             </li>
           ))}
         </ol>
+        <Link
+          href="/guide"
+          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 backdrop-blur-sm transition hover:bg-white/15"
+        >
+          <i className="fa-solid fa-book-open" />
+          อ่านคู่มือการกรอกก่อนเริ่ม
+        </Link>
       </header>
 
       <form onSubmit={onSubmit} className="space-y-5">

@@ -7,6 +7,7 @@ import { useState } from "react";
 const links = [
   { href: "/", label: "Dashboard", icon: "fa-chart-pie" },
   { href: "/form", label: "ลงทะเบียน (นักเรียน)", icon: "fa-clipboard-list" },
+  { href: "/guide", label: "คู่มือกรอกฟอร์ม", icon: "fa-book-open" },
   { href: "/admin", label: "ผู้ดูแลระบบ", icon: "fa-user-shield" },
 ];
 

@@ -79,6 +79,7 @@ export default function AdminPage() {
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
+  const [quickQuery, setQuickQuery] = useState("");
   const [filterGrade, setFilterGrade] = useState("");
   const [filterRoom, setFilterRoom] = useState("");
   const [filterHelmet, setFilterHelmet] = useState("");
@@ -122,22 +123,51 @@ export default function AdminPage() {
 
   const stats = useMemo(() => computeStats(rows), [rows]);
 
+  function matchesSearch(r: RegRow, q: string) {
+    if (!q) return true;
+    const fullName = `${r.prefix}${r.first_name} ${r.last_name}`.toLowerCase();
+    return (
+      fullName.includes(q) ||
+      r.first_name.toLowerCase().includes(q) ||
+      r.last_name.toLowerCase().includes(q) ||
+      r.student_id.includes(q) ||
+      r.plate_number.toLowerCase().includes(q) ||
+      r.phone.includes(q) ||
+      r.brand.toLowerCase().includes(q) ||
+      r.color.toLowerCase().includes(q) ||
+      `${r.grade}/${r.room}`.toLowerCase().includes(q)
+    );
+  }
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
       if (filterGrade && r.grade !== filterGrade) return false;
       if (filterRoom && r.room !== filterRoom) return false;
       if (filterHelmet && r.helmet !== filterHelmet) return false;
-      if (!q) return true;
-      return (
-        r.first_name.toLowerCase().includes(q) ||
-        r.last_name.toLowerCase().includes(q) ||
-        r.student_id.includes(q) ||
-        r.plate_number.toLowerCase().includes(q) ||
-        r.phone.includes(q)
-      );
+      return matchesSearch(r, q);
     });
   }, [rows, query, filterGrade, filterRoom, filterHelmet]);
+
+  const quickResults = useMemo(() => {
+    const q = quickQuery.trim().toLowerCase();
+    if (!q) return [];
+    return rows.filter((r) => matchesSearch(r, q)).slice(0, 8);
+  }, [rows, quickQuery]);
+
+  const quickTotal = useMemo(() => {
+    const q = quickQuery.trim().toLowerCase();
+    if (!q) return 0;
+    return rows.filter((r) => matchesSearch(r, q)).length;
+  }, [rows, quickQuery]);
+
+  function openInDataTable(search = quickQuery) {
+    setQuery(search.trim());
+    setFilterGrade("");
+    setFilterRoom("");
+    setFilterHelmet("");
+    setTab("data");
+  }
 
   async function logout() {
     await timedFetch("/api/auth/logout", { method: "POST" });
@@ -431,6 +461,150 @@ export default function AdminPage() {
 
       {tab === "overview" && (
         <div className="space-y-6">
+          <div className="overflow-hidden rounded-[1.75rem] border border-blue-100 bg-gradient-to-br from-blue-700 via-blue-600 to-sky-500 p-6 text-white shadow-md sm:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-100/90">
+                  Quick Lookup
+                </p>
+                <h3 className="mt-2 text-xl font-extrabold sm:text-2xl">
+                  ค้นหาด่วน นักเรียน / รถ
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-blue-100/90">
+                  พิมพ์ชื่อ นามสกุล เลขประจำตัว เบอร์โทร หรือเลขทะเบียน
+                  เพื่อดูข้อมูลทันทีจากภาพรวม
+                </p>
+              </div>
+              <div className="flex w-full max-w-xl flex-col gap-2 sm:flex-row">
+                <div className="relative flex-1">
+                  <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <input
+                    value={quickQuery}
+                    onChange={(e) => setQuickQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && quickQuery.trim()) {
+                        openInDataTable();
+                      }
+                    }}
+                    placeholder="เช่น สมชาย / 12345 / 1กพ4567"
+                    className="w-full rounded-2xl border-0 bg-white py-3.5 pl-11 pr-4 text-sm font-semibold text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-300"
+                  />
+                </div>
+                <Button
+                  type="button"
+                  className="shrink-0 bg-amber-400 text-slate-900 hover:bg-amber-300"
+                  onClick={() => openInDataTable()}
+                  disabled={!quickQuery.trim()}
+                >
+                  <i className="fa-solid fa-table" />
+                  เปิดในตาราง
+                </Button>
+              </div>
+            </div>
+
+            {quickQuery.trim() && (
+              <div className="mt-5 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+                  <p className="font-semibold text-blue-50">
+                    ผลค้นหา {quickTotal.toLocaleString()} รายการ
+                    {quickTotal > quickResults.length
+                      ? ` · แสดง ${quickResults.length} รายการแรก`
+                      : ""}
+                  </p>
+                  {quickTotal > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => openInDataTable()}
+                      className="text-xs font-bold text-amber-200 underline-offset-2 hover:underline"
+                    >
+                      ดูทั้งหมดในตารางข้อมูล
+                    </button>
+                  )}
+                </div>
+
+                {quickResults.length === 0 ? (
+                  <div className="rounded-xl bg-white/10 px-4 py-8 text-center text-sm text-blue-50">
+                    ไม่พบข้อมูลที่ตรงกับ “{quickQuery.trim()}”
+                  </div>
+                ) : (
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {quickResults.map((r) => (
+                      <div
+                        key={r.id}
+                        className="rounded-2xl border border-white/15 bg-white p-4 text-slate-800 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-bold">
+                              {r.prefix}
+                              {r.first_name} {r.last_name}
+                            </p>
+                            <p className="mt-0.5 text-xs text-slate-500">
+                              {r.student_id} · {r.grade}/{r.room} · {r.phone}
+                            </p>
+                          </div>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                              r.helmet === "มี"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "bg-rose-50 text-rose-700"
+                            }`}
+                          >
+                            หมวก: {r.helmet}
+                          </span>
+                        </div>
+                        <div className="mt-3 flex items-center gap-3">
+                          <div className="flex gap-1.5">
+                            {[r.bike_url, r.plate_url, r.rider_url].map(
+                              (src, i) =>
+                                src ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    key={i}
+                                    src={src}
+                                    alt=""
+                                    className="h-10 w-10 rounded-lg object-cover ring-1 ring-slate-200"
+                                  />
+                                ) : null,
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-semibold">
+                              {r.plate_number}
+                            </p>
+                            <p className="truncate text-xs text-slate-500">
+                              {r.brand} · {r.color} · {r.province}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            className="flex-1 px-3 py-2 text-xs"
+                            onClick={() => {
+                              setEdit(r);
+                              setEditFiles({});
+                            }}
+                          >
+                            แก้ไข
+                          </Button>
+                          <Button
+                            type="button"
+                            className="flex-1 px-3 py-2 text-xs"
+                            onClick={() => openInDataTable(r.plate_number)}
+                          >
+                            เปิดในตาราง
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {!loading && <DashboardCharts stats={stats} />}
 
           <div className="grid gap-4 lg:grid-cols-3">

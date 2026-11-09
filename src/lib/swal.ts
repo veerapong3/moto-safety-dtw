@@ -35,13 +35,22 @@ export async function swalConfirm(options: {
 }
 
 export async function swalSuccess(title: string, text?: string) {
+  const hasBreaks = Boolean(text?.includes("\n"));
   await Swal.fire({
     ...base,
     icon: "success",
     title,
-    text,
-    timer: 2200,
-    showConfirmButton: false,
+    ...(hasBreaks
+      ? {
+          html: text!
+            .split("\n")
+            .map((line) => `<div>${line}</div>`)
+            .join(""),
+        }
+      : { text }),
+    confirmButtonText: "ตกลง",
+    allowOutsideClick: false,
+    allowEscapeKey: true,
   });
 }
 

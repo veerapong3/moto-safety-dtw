@@ -323,8 +323,9 @@ export default function FormPage() {
               <Input
                 name="plateNumber"
                 required
-                pattern="[ก-ฮ]{2,3}[0-9]+"
-                placeholder="เช่น กข1234"
+                pattern="[0-9]?[ก-ฮ]{2,3}[0-9]+"
+                placeholder="เช่น กข1234 หรือ 1กพ4567"
+                title="ใส่ตัวอักษรไทย 2–3 ตัว ตามด้วยตัวเลข หรือมีเลขนำหน้าได้ เช่น 1กพ4567"
               />
             </Field>
             <Field label="จังหวัดที่จดทะเบียน *">

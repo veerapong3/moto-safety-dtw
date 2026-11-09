@@ -19,7 +19,10 @@ export const registrationSchema = z.object({
   color: z.string().min(1),
   plateNumber: z
     .string()
-    .regex(/^[ก-ฮ]{2,3}[0-9]+$/, "รูปแบบทะเบียนไม่ถูกต้อง เช่น ยนร456"),
+    .regex(
+      /^[0-9]?[ก-ฮ]{2,3}[0-9]+$/,
+      "รูปแบบทะเบียนไม่ถูกต้อง เช่น กข1234 หรือ 1กพ4567",
+    ),
   province: z.string().min(1),
   helmet: z.enum(["มี", "ไม่มี"]),
   pillionName: z.string().optional().default(""),

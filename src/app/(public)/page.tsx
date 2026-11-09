@@ -149,7 +149,7 @@ export default function HomePage() {
             <input
               value={plate}
               onChange={(e) => setPlate(e.target.value)}
-              placeholder="กรอกเลขทะเบียน เช่น ยนร456 (ห้ามเว้นวรรค)"
+              placeholder="เช่น กข1234 หรือ 1กพ4567 (ห้ามเว้นวรรค)"
               className="w-full rounded-xl bg-white px-4 py-3 text-sm font-semibold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
             <button

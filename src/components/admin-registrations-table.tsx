@@ -52,12 +52,13 @@ export function AdminRegistrationsTable({
       {
         id: "seq",
         enableSorting: false,
-        header: "#",
+        size: 64,
+        header: "ลำดับ",
         cell: ({ row, table }) => {
           const { pageIndex, pageSize } = table.getState().pagination;
           const seq = pageIndex * pageSize + row.index + 1;
           return (
-            <span className="tabular-nums text-xs font-bold text-slate-400">
+            <span className="inline-flex min-w-[1.75rem] justify-center tabular-nums text-sm font-bold text-slate-700">
               {seq}
             </span>
           );
@@ -245,8 +246,16 @@ export function AdminRegistrationsTable({
                 {headerGroup.headers.map((header) => {
                   const canSort = header.column.getCanSort();
                   const sorted = header.column.getIsSorted();
+                  const isSeq = header.column.id === "seq";
                   return (
-                    <th key={header.id} className="px-5 py-4">
+                    <th
+                      key={header.id}
+                      className={
+                        isSeq
+                          ? "w-16 px-3 py-4 text-center normal-case"
+                          : "px-5 py-4"
+                      }
+                    >
                       {header.isPlaceholder ? null : canSort ? (
                         <button
                           type="button"
@@ -302,7 +311,14 @@ export function AdminRegistrationsTable({
               table.getRowModel().rows.map((row) => (
                 <tr key={row.id} className="hover:bg-slate-50/80">
                   {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-5 py-3.5">
+                    <td
+                      key={cell.id}
+                      className={
+                        cell.column.id === "seq"
+                          ? "w-16 px-3 py-3.5 text-center"
+                          : "px-5 py-3.5"
+                      }
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext(),

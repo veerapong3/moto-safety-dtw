@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AdminRegistrationsTable } from "@/components/admin-registrations-table";
 import {
   ImageThumbnails,
   registrationImages,
@@ -740,102 +741,17 @@ export default function AdminPage() {
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[860px] border-collapse text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
-                    <th className="px-5 py-4">นักเรียน / เบอร์</th>
-                    <th className="px-5 py-4">ชั้น</th>
-                    <th className="px-5 py-4">รถ</th>
-                    <th className="px-5 py-4">ทะเบียน</th>
-                    <th className="px-5 py-4">รูป</th>
-                    <th className="px-5 py-4 text-center">จัดการ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {loading ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-5 py-12 text-center text-slate-400"
-                      >
-                        กำลังโหลดข้อมูล...
-                      </td>
-                    </tr>
-                  ) : filtered.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="px-5 py-12 text-center text-slate-400"
-                      >
-                        ไม่พบข้อมูลตามเงื่อนไขที่เลือก
-                      </td>
-                    </tr>
-                  ) : (
-                    filtered.map((r) => (
-                      <tr key={r.id} className="hover:bg-slate-50/80">
-                        <td className="px-5 py-3.5">
-                          <div className="font-semibold text-slate-900">
-                            {r.prefix}
-                            {r.first_name} {r.last_name}
-                          </div>
-                          <div className="mt-0.5 text-xs text-slate-400">
-                            {r.student_id} · {r.phone}
-                          </div>
-                          <span
-                            className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
-                              r.helmet === "มี"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-rose-50 text-rose-700"
-                            }`}
-                          >
-                            หมวก: {r.helmet}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 font-semibold">
-                          {r.grade}/{r.room}
-                        </td>
-                        <td className="px-5 py-3.5">
-                          {r.brand} · {r.color}
-                        </td>
-                        <td className="px-5 py-3.5 font-semibold">
-                          {r.plate_number}
-                          <div className="text-xs font-normal text-slate-400">
-                            {r.province}
-                          </div>
-                        </td>
-                        <td className="px-5 py-3.5">
-                          <ImageThumbnails images={registrationImages(r)} />
-                        </td>
-                        <td className="px-5 py-3.5 text-center">
-                          <div className="flex justify-center gap-2">
-                            <Button
-                              variant="secondary"
-                              className="px-3 py-1.5 text-xs"
-                              onClick={() => {
-                                setEdit(r);
-                                setEditFiles({});
-                              }}
-                            >
-                              แก้ไข
-                            </Button>
-                            <Button
-                              variant="danger"
-                              className="px-3 py-1.5 text-xs"
-                              onClick={() => deleteRow(r.id)}
-                            >
-                              ลบ
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <AdminRegistrationsTable
+            data={filtered}
+            loading={loading}
+            onEdit={(r) => {
+              setEdit(r);
+              setEditFiles({});
+            }}
+            onDelete={(id) => {
+              void deleteRow(id);
+            }}
+          />
         </div>
       )}
 

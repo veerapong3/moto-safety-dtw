@@ -4,6 +4,10 @@ import dynamic from "next/dynamic";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import {
+  ImageThumbnails,
+  registrationImages,
+} from "@/components/image-lightbox";
 import { OptionListEditor } from "@/components/option-list-editor";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
@@ -554,20 +558,10 @@ export default function AdminPage() {
                           </span>
                         </div>
                         <div className="mt-3 flex items-center gap-3">
-                          <div className="flex gap-1.5">
-                            {[r.bike_url, r.plate_url, r.rider_url].map(
-                              (src, i) =>
-                                src ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    key={i}
-                                    src={src}
-                                    alt=""
-                                    className="h-10 w-10 rounded-lg object-cover ring-1 ring-slate-200"
-                                  />
-                                ) : null,
-                            )}
-                          </div>
+                          <ImageThumbnails
+                            images={registrationImages(r)}
+                            sizeClass="h-10 w-10"
+                          />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-sm font-semibold">
                               {r.plate_number}
@@ -812,20 +806,7 @@ export default function AdminPage() {
                           </div>
                         </td>
                         <td className="px-5 py-3.5">
-                          <div className="flex gap-1.5">
-                            {[r.bike_url, r.plate_url, r.rider_url].map(
-                              (src, i) =>
-                                src ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    key={i}
-                                    src={src}
-                                    alt=""
-                                    className="h-11 w-11 rounded-xl object-cover ring-1 ring-slate-200"
-                                  />
-                                ) : null,
-                            )}
-                          </div>
+                          <ImageThumbnails images={registrationImages(r)} />
                         </td>
                         <td className="px-5 py-3.5 text-center">
                           <div className="flex justify-center gap-2">
@@ -1258,29 +1239,56 @@ export default function AdminPage() {
                   </label>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-3 border-t border-slate-100 pt-3">
-                {(["bike", "plate", "rider"] as const).map((kind) => (
-                  <div key={kind} className="text-center text-xs">
-                    <div className="mb-1 font-bold text-slate-500">{kind}</div>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={
-                        editFiles[kind]
+              <div className="space-y-3 border-t border-slate-100 pt-3">
+                <div className="flex justify-center">
+                  <ImageThumbnails
+                    images={(
+                      [
+                        {
+                          kind: "bike" as const,
+                          label: "รูปรถจักรยานยนต์",
+                        },
+                        {
+                          kind: "plate" as const,
+                          label: "รูปป้ายทะเบียน",
+                        },
+                        {
+                          kind: "rider" as const,
+                          label: "รูปผู้ขับขี่",
+                        },
+                      ] as const
+                    )
+                      .map(({ kind, label }) => ({
+                        src: editFiles[kind]
                           ? `/api/files/${editFiles[kind]}`
-                          : (edit[`${kind}_url` as keyof RegRow] as string) || ""
-                      }
-                      alt=""
-                      className="mx-auto mb-2 h-16 w-16 rounded-lg object-cover"
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) =>
-                        onEditFile(kind, e.target.files?.[0] || null)
-                      }
-                    />
-                  </div>
-                ))}
+                          : (edit[`${kind}_url` as keyof RegRow] as string) ||
+                            "",
+                        label,
+                      }))
+                      .filter((img) => Boolean(img.src))}
+                    sizeClass="h-16 w-16"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  {(["bike", "plate", "rider"] as const).map((kind) => (
+                    <div key={kind} className="text-center text-xs">
+                      <div className="mb-1 font-bold text-slate-500">
+                        {kind === "bike"
+                          ? "รูปรถ"
+                          : kind === "plate"
+                            ? "ป้ายทะเบียน"
+                            : "ผู้ขับขี่"}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) =>
+                          onEditFile(kind, e.target.files?.[0] || null)
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
               <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
                 <Button

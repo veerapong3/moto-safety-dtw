@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -7,8 +8,22 @@ import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
 import { timedFetch } from "@/lib/perf-client";
-import type { PublicConfig, Registration } from "@/lib/types";
+import { swalConfirm } from "@/lib/swal";
+import type { DashboardStats, PublicConfig, Registration } from "@/lib/types";
 import { THAI_PROVINCES } from "@/lib/validations";
+
+const DashboardCharts = dynamic(
+  () =>
+    import("@/components/dashboard-charts").then((m) => m.DashboardCharts),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="rounded-2xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-400">
+        กำลังโหลดกราฟ...
+      </div>
+    ),
+  },
+);
 
 type RegRow = Registration & {
   bike_url?: string;
@@ -16,15 +31,50 @@ type RegRow = Registration & {
   rider_url?: string;
 };
 
+function computeStats(rows: RegRow[]): DashboardStats {
+  const byGrade: Record<string, number> = {
+    "ม.1": 0,
+    "ม.2": 0,
+    "ม.3": 0,
+    "ม.4": 0,
+    "ม.5": 0,
+    "ม.6": 0,
+  };
+  let junior = 0;
+  let senior = 0;
+  let helmetYes = 0;
+  let helmetNo = 0;
+
+  for (const row of rows) {
+    if (["ม.1", "ม.2", "ม.3"].includes(row.grade)) junior++;
+    else if (["ม.4", "ม.5", "ม.6"].includes(row.grade)) senior++;
+    if (row.helmet === "มี") helmetYes++;
+    else helmetNo++;
+    if (row.grade in byGrade) byGrade[row.grade]++;
+  }
+
+  const total = rows.length;
+  return {
+    total,
+    junior,
+    senior,
+    helmetYes,
+    helmetNo,
+    helmetRate: total > 0 ? Number(((helmetYes / total) * 100).toFixed(1)) : 0,
+    byGrade,
+  };
+}
+
 export default function AdminPage() {
   const router = useRouter();
-  const [tab, setTab] = useState<"report" | "settings">("report");
+  const [tab, setTab] = useState<"overview" | "data" | "settings">("overview");
   const [rows, setRows] = useState<RegRow[]>([]);
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [filterGrade, setFilterGrade] = useState("");
   const [filterRoom, setFilterRoom] = useState("");
+  const [filterHelmet, setFilterHelmet] = useState("");
   const [edit, setEdit] = useState<RegRow | null>(null);
   const [editFiles, setEditFiles] = useState<{
     bike?: string;
@@ -32,9 +82,11 @@ export default function AdminPage() {
     rider?: string;
   }>({});
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadAll = useCallback(async () => {
     try {
+      setLoading(true);
       const [regRes, setRes] = await Promise.all([
         timedFetch("/api/registrations"),
         timedFetch("/api/settings"),
@@ -52,6 +104,8 @@ export default function AdminPage() {
       setConfig(setData.config || null);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "โหลดข้อมูลไม่สำเร็จ");
+    } finally {
+      setLoading(false);
     }
   }, [router]);
 
@@ -59,20 +113,24 @@ export default function AdminPage() {
     loadAll();
   }, [loadAll]);
 
+  const stats = useMemo(() => computeStats(rows), [rows]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
       if (filterGrade && r.grade !== filterGrade) return false;
       if (filterRoom && r.room !== filterRoom) return false;
+      if (filterHelmet && r.helmet !== filterHelmet) return false;
       if (!q) return true;
       return (
         r.first_name.toLowerCase().includes(q) ||
         r.last_name.toLowerCase().includes(q) ||
         r.student_id.includes(q) ||
-        r.plate_number.toLowerCase().includes(q)
+        r.plate_number.toLowerCase().includes(q) ||
+        r.phone.includes(q)
       );
     });
-  }, [rows, query, filterGrade, filterRoom]);
+  }, [rows, query, filterGrade, filterRoom, filterHelmet]);
 
   async function logout() {
     await timedFetch("/api/auth/logout", { method: "POST" });
@@ -133,7 +191,13 @@ export default function AdminPage() {
   }
 
   async function deleteRow(id: string) {
-    if (!confirm("ยืนยันลบข้อมูลและรูปภาพออกอย่างถาวรหรือไม่?")) return;
+    const ok = await swalConfirm({
+      title: "ยืนยันลบข้อมูล?",
+      text: "จะลบข้อมูลและรูปภาพออกอย่างถาวร",
+      confirmText: "ลบถาวร",
+      cancelText: "ยกเลิก",
+    });
+    if (!ok) return;
     const res = await timedFetch(`/api/registrations/${id}`, {
       method: "DELETE",
     });
@@ -208,97 +272,304 @@ export default function AdminPage() {
     (settings.REGISTRATION_OPEN || "true").toLowerCase() === "true" ||
     settings.REGISTRATION_OPEN === "ON";
 
+  const tabs = [
+    { id: "overview" as const, label: "ภาพรวม", icon: "fa-chart-pie" },
+    { id: "data" as const, label: "ข้อมูลลงทะเบียน", icon: "fa-table" },
+    { id: "settings" as const, label: "ตั้งค่า", icon: "fa-gear" },
+  ];
+
+  const kpiCards = [
+    {
+      label: "ลงทะเบียนทั้งหมด",
+      value: loading ? "…" : stats.total.toLocaleString(),
+      sub: "คัน",
+      icon: "fa-motorcycle",
+      tone: "from-blue-600 to-sky-500",
+      wrap: "border-blue-100 bg-gradient-to-br from-blue-50 via-white to-sky-50",
+    },
+    {
+      label: "ม.ต้น (ม.1–ม.3)",
+      value: loading ? "…" : stats.junior.toLocaleString(),
+      sub: "คัน",
+      icon: "fa-graduation-cap",
+      tone: "from-cyan-600 to-teal-500",
+      wrap: "border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-teal-50",
+    },
+    {
+      label: "ม.ปลาย (ม.4–ม.6)",
+      value: loading ? "…" : stats.senior.toLocaleString(),
+      sub: "คัน",
+      icon: "fa-user-graduate",
+      tone: "from-amber-500 to-orange-500",
+      wrap: "border-amber-100 bg-gradient-to-br from-amber-50 via-white to-orange-50",
+    },
+    {
+      label: "อัตรามีหมวกนิรภัย",
+      value: loading ? "…" : `${stats.helmetRate}%`,
+      sub: loading ? "" : `มี ${stats.helmetYes} · ไม่มี ${stats.helmetNo}`,
+      icon: "fa-helmet-safety",
+      tone: "from-emerald-600 to-green-500",
+      wrap: "border-emerald-100 bg-gradient-to-br from-emerald-50 via-white to-green-50",
+    },
+  ];
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-slate-200 pb-5 md:flex-row md:items-center">
-        <div>
-          <h2 className="text-2xl font-extrabold text-slate-800">
-            <i className="fa-solid fa-user-gear mr-2 text-blue-700" />
-            แผงควบคุมผู้ดูแลระบบ
-          </h2>
-          <p className="mt-1 text-xs text-slate-500">
-            จัดการข้อมูลความปลอดภัย ค้นหา กรอง และควบคุมการลงทะเบียน
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex space-x-1 rounded-xl bg-slate-100 p-1">
-            <button
-              type="button"
-              onClick={() => setTab("report")}
-              className={`rounded-lg px-4 py-2 text-sm font-bold transition ${
-                tab === "report"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-600"
-              }`}
-            >
-              ตารางข้อมูล
-            </button>
-            <button
-              type="button"
-              onClick={() => setTab("settings")}
-              className={`rounded-lg px-4 py-2 text-sm font-bold transition ${
-                tab === "settings"
-                  ? "bg-white text-slate-800 shadow-sm"
-                  : "text-slate-600"
-              }`}
-            >
-              ตั้งค่า
-            </button>
-          </div>
-          <Button variant="secondary" onClick={logout}>
-            ออกจากระบบ
-          </Button>
-        </div>
-      </div>
-
-      {tab === "report" && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm md:grid-cols-4">
-            <Field label="ค้นหา">
-              <Input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="ชื่อ, นามสกุล, เลขทะเบียน..."
-              />
-            </Field>
-            <Field label="ระดับชั้น">
-              <Select
-                value={filterGrade}
-                onChange={(e) => setFilterGrade(e.target.value)}
+      <div className="overflow-hidden rounded-[1.75rem] border border-slate-200/80 bg-white shadow-sm">
+        <div className="bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-7 text-white sm:px-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-blue-200/90">
+                Admin Console
+              </p>
+              <h2 className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">
+                แผงควบคุมผู้ดูแลระบบ
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-blue-100/90">
+                สรุปสถิติ จัดการข้อมูลลงทะเบียน และควบคุมการเปิด–ปิดรับข้อมูล
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                {config?.academicYear && (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1">
+                    ปีการศึกษา {config.academicYear}
+                  </span>
+                )}
+                {config?.semester && (
+                  <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1">
+                    ภาคเรียนที่ {config.semester}
+                  </span>
+                )}
+                <span
+                  className={`rounded-full px-3 py-1 ${
+                    open
+                      ? "bg-emerald-400/20 text-emerald-100"
+                      : "bg-rose-400/20 text-rose-100"
+                  }`}
+                >
+                  {open ? "เปิดรับลงทะเบียน" : "ปิดรับลงทะเบียน"}
+                </span>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="secondary"
+                className="bg-white/15 text-white hover:bg-white/25"
+                onClick={loadAll}
               >
-                <option value="">-- ทั้งหมด --</option>
-                {(config?.grades || []).map((g) => (
-                  <option key={g} value={g}>
-                    {g}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <Field label="ห้อง">
-              <Select
-                value={filterRoom}
-                onChange={(e) => setFilterRoom(e.target.value)}
+                <i className="fa-solid fa-rotate" />
+                รีเฟรช
+              </Button>
+              <Button
+                variant="secondary"
+                className="bg-white text-slate-800 hover:bg-slate-100"
+                onClick={logout}
               >
-                <option value="">-- ทั้งหมด --</option>
-                {(config?.rooms || []).map((r) => (
-                  <option key={r} value={r}>
-                    ห้อง {r}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-            <div className="flex items-end">
-              <Button variant="secondary" className="w-full" onClick={loadAll}>
-                <i className="fa-solid fa-rotate" /> รีเฟรช
+                <i className="fa-solid fa-right-from-bracket" />
+                ออกจากระบบ
               </Button>
             </div>
           </div>
+        </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex flex-wrap gap-1 border-t border-slate-100 bg-slate-50/80 p-2">
+          {tabs.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
+                tab === t.id
+                  ? "bg-white text-blue-800 shadow-sm ring-1 ring-slate-200"
+                  : "text-slate-600 hover:bg-white/70"
+              }`}
+            >
+              <i className={`fa-solid ${t.icon}`} />
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {(tab === "overview" || tab === "data") && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {kpiCards.map((card) => (
+            <div
+              key={card.label}
+              className={`relative overflow-hidden rounded-2xl border p-5 shadow-sm ${card.wrap}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold tracking-wide text-slate-500">
+                    {card.label}
+                  </p>
+                  <p className="mt-2 text-3xl font-extrabold tabular-nums text-slate-900">
+                    {card.value}
+                  </p>
+                  {card.sub && (
+                    <p className="mt-1 text-xs font-semibold text-slate-500">
+                      {card.sub}
+                    </p>
+                  )}
+                </div>
+                <span
+                  className={`grid h-12 w-12 place-items-center rounded-2xl bg-gradient-to-br text-white shadow-lg ${card.tone}`}
+                >
+                  <i className={`fa-solid ${card.icon}`} />
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {tab === "overview" && (
+        <div className="space-y-6">
+          {!loading && <DashboardCharts stats={stats} />}
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
+              <h3 className="text-lg font-bold text-slate-800">
+                สรุปการใช้งานด่วน
+              </h3>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setTab("data")}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <p className="text-sm font-bold text-slate-800">
+                    <i className="fa-solid fa-table mr-2 text-blue-700" />
+                    จัดการข้อมูลลงทะเบียน
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    ค้นหา แก้ไข ลบ · ทั้งหมด {stats.total} รายการ
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTab("settings")}
+                  className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-left transition hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <p className="text-sm font-bold text-slate-800">
+                    <i className="fa-solid fa-gear mr-2 text-blue-700" />
+                    ตั้งค่าระบบ
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    เปิด–ปิดรับลงทะเบียน ชั้น ห้อง ยี่ห้อ และรูปตัวอย่าง
+                  </p>
+                </button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-800">สถานะระบบ</h3>
+              <dl className="mt-4 space-y-3 text-sm">
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+                  <dt className="text-slate-500">รับลงทะเบียน</dt>
+                  <dd
+                    className={`font-bold ${
+                      open ? "text-emerald-700" : "text-rose-700"
+                    }`}
+                  >
+                    {open ? "เปิด" : "ปิด"}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+                  <dt className="text-slate-500">ปีการศึกษา</dt>
+                  <dd className="font-bold text-slate-800">
+                    {config?.academicYear || "-"}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+                  <dt className="text-slate-500">ภาคเรียน</dt>
+                  <dd className="font-bold text-slate-800">
+                    {config?.semester || "-"}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-4 py-3">
+                  <dt className="text-slate-500">โรงเรียน</dt>
+                  <dd className="font-bold text-slate-800">
+                    {config?.schoolName || "-"}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {tab === "data" && (
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">
+                  ข้อมูลลงทะเบียน
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  แสดง {filtered.length.toLocaleString()} จาก{" "}
+                  {rows.length.toLocaleString()} รายการ
+                </p>
+              </div>
+              <Button variant="secondary" onClick={loadAll}>
+                <i className="fa-solid fa-rotate" /> รีเฟรชตาราง
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+              <div className="xl:col-span-2">
+                <Field label="ค้นหา">
+                  <Input
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="ชื่อ, นามสกุล, เลขประจำตัว, ทะเบียน, เบอร์"
+                  />
+                </Field>
+              </div>
+              <Field label="ระดับชั้น">
+                <Select
+                  value={filterGrade}
+                  onChange={(e) => setFilterGrade(e.target.value)}
+                >
+                  <option value="">ทั้งหมด</option>
+                  {(config?.grades || []).map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="ห้อง">
+                <Select
+                  value={filterRoom}
+                  onChange={(e) => setFilterRoom(e.target.value)}
+                >
+                  <option value="">ทั้งหมด</option>
+                  {(config?.rooms || []).map((r) => (
+                    <option key={r} value={r}>
+                      ห้อง {r}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="หมวกนิรภัย">
+                <Select
+                  value={filterHelmet}
+                  onChange={(e) => setFilterHelmet(e.target.value)}
+                >
+                  <option value="">ทั้งหมด</option>
+                  <option value="มี">มี</option>
+                  <option value="ไม่มี">ไม่มี</option>
+                </Select>
+              </Field>
+            </div>
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-left text-sm">
+              <table className="w-full min-w-[860px] border-collapse text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase text-slate-500">
+                  <tr className="border-b border-slate-200 bg-slate-50 text-xs font-bold uppercase tracking-wide text-slate-500">
                     <th className="px-5 py-4">นักเรียน / เบอร์</th>
                     <th className="px-5 py-4">ชั้น</th>
                     <th className="px-5 py-4">รถ</th>
@@ -308,28 +579,37 @@ export default function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-slate-700">
-                  {filtered.length === 0 ? (
+                  {loading ? (
                     <tr>
                       <td
                         colSpan={6}
-                        className="px-5 py-10 text-center text-slate-400"
+                        className="px-5 py-12 text-center text-slate-400"
                       >
-                        ยังไม่มีข้อมูล
+                        กำลังโหลดข้อมูล...
+                      </td>
+                    </tr>
+                  ) : filtered.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="px-5 py-12 text-center text-slate-400"
+                      >
+                        ไม่พบข้อมูลตามเงื่อนไขที่เลือก
                       </td>
                     </tr>
                   ) : (
                     filtered.map((r) => (
-                      <tr key={r.id}>
-                        <td className="px-5 py-3">
-                          <div className="font-semibold">
+                      <tr key={r.id} className="hover:bg-slate-50/80">
+                        <td className="px-5 py-3.5">
+                          <div className="font-semibold text-slate-900">
                             {r.prefix}
                             {r.first_name} {r.last_name}
                           </div>
-                          <div className="text-xs text-slate-400">
+                          <div className="mt-0.5 text-xs text-slate-400">
                             {r.student_id} · {r.phone}
                           </div>
                           <span
-                            className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                            className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
                               r.helmet === "มี"
                                 ? "bg-emerald-50 text-emerald-700"
                                 : "bg-rose-50 text-rose-700"
@@ -338,20 +618,20 @@ export default function AdminPage() {
                             หมวก: {r.helmet}
                           </span>
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-5 py-3.5 font-semibold">
                           {r.grade}/{r.room}
                         </td>
-                        <td className="px-5 py-3">
+                        <td className="px-5 py-3.5">
                           {r.brand} · {r.color}
                         </td>
-                        <td className="px-5 py-3 font-semibold">
+                        <td className="px-5 py-3.5 font-semibold">
                           {r.plate_number}
                           <div className="text-xs font-normal text-slate-400">
                             {r.province}
                           </div>
                         </td>
-                        <td className="px-5 py-3">
-                          <div className="flex gap-1">
+                        <td className="px-5 py-3.5">
+                          <div className="flex gap-1.5">
                             {[r.bike_url, r.plate_url, r.rider_url].map(
                               (src, i) =>
                                 src ? (
@@ -360,13 +640,13 @@ export default function AdminPage() {
                                     key={i}
                                     src={src}
                                     alt=""
-                                    className="h-10 w-10 rounded-lg object-cover"
+                                    className="h-11 w-11 rounded-xl object-cover ring-1 ring-slate-200"
                                   />
                                 ) : null,
                             )}
                           </div>
                         </td>
-                        <td className="px-5 py-3 text-center">
+                        <td className="px-5 py-3.5 text-center">
                           <div className="flex justify-center gap-2">
                             <Button
                               variant="secondary"
@@ -398,103 +678,134 @@ export default function AdminPage() {
       )}
 
       {tab === "settings" && (
-        <div className="max-w-xl space-y-5 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
-          <div>
-            <h4 className="mb-1 text-sm font-bold text-slate-700">
-              เปิด-ปิดรับลงทะเบียน
-            </h4>
-            <Button
-              variant={open ? "danger" : "primary"}
-              onClick={() =>
-                setSettings((s) => ({
-                  ...s,
-                  REGISTRATION_OPEN: open ? "false" : "true",
-                }))
-              }
-            >
-              สลับเป็น {open ? "ปิดรับข้อมูล" : "เปิดรับข้อมูล"}
-            </Button>
-            <p className="mt-2 text-xs text-slate-400">
-              สถานะปัจจุบัน: {open ? "เปิด" : "ปิด"}
-            </p>
-          </div>
-          {(
-            [
-              ["GRADES", "ระดับชั้น (คั่นด้วย ,)"],
-              ["ROOMS", "ห้องเรียน (คั่นด้วย ,)"],
-              ["BRANDS", "ยี่ห้อรถ (คั่นด้วย ,)"],
-              ["COLORS", "สีรถ (คั่นด้วย ,)"],
-              ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา (เช่น 2569)"],
-              ["CONTACT_EMAIL", "อีเมลติดต่อ"],
-              ["CLOSED_MESSAGE", "ข้อความตอนปิดระบบ"],
-              ["DRIVE_ROOT_FOLDER_ID", "Drive Root Folder ID"],
-            ] as const
-          ).map(([key, label]) => (
-            <Field key={key} label={label}>
-              <Input
-                value={settings[key] || ""}
+        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">การตั้งค่าระบบ</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                ปรับค่าที่ใช้กับฟอร์มสาธารณะและสถานะรับลงทะเบียน
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-sm font-bold text-slate-700">
+                    เปิด–ปิดรับลงทะเบียน
+                  </h4>
+                  <p className="mt-1 text-xs text-slate-500">
+                    สถานะปัจจุบัน:{" "}
+                    <span
+                      className={`font-bold ${
+                        open ? "text-emerald-700" : "text-rose-700"
+                      }`}
+                    >
+                      {open ? "เปิด" : "ปิด"}
+                    </span>
+                  </p>
+                </div>
+                <Button
+                  variant={open ? "danger" : "primary"}
+                  onClick={() =>
+                    setSettings((s) => ({
+                      ...s,
+                      REGISTRATION_OPEN: open ? "false" : "true",
+                    }))
+                  }
+                >
+                  สลับเป็น {open ? "ปิดรับข้อมูล" : "เปิดรับข้อมูล"}
+                </Button>
+              </div>
+            </div>
+
+            {(
+              [
+                ["GRADES", "ระดับชั้น (คั่นด้วย ,)"],
+                ["ROOMS", "ห้องเรียน (คั่นด้วย ,)"],
+                ["BRANDS", "ยี่ห้อรถ (คั่นด้วย ,)"],
+                ["COLORS", "สีรถ (คั่นด้วย ,)"],
+                ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา (เช่น 2569)"],
+                ["CONTACT_EMAIL", "อีเมลติดต่อ"],
+                ["CLOSED_MESSAGE", "ข้อความตอนปิดระบบ"],
+                ["DRIVE_ROOT_FOLDER_ID", "Drive Root Folder ID"],
+              ] as const
+            ).map(([key, label]) => (
+              <Field key={key} label={label}>
+                <Input
+                  value={settings[key] || ""}
+                  onChange={(e) =>
+                    setSettings((s) => ({ ...s, [key]: e.target.value }))
+                  }
+                />
+              </Field>
+            ))}
+
+            <Field label="ภาคเรียน">
+              <Select
+                value={settings.CURRENT_SEMESTER || ""}
                 onChange={(e) =>
-                  setSettings((s) => ({ ...s, [key]: e.target.value }))
+                  setSettings((s) => ({
+                    ...s,
+                    CURRENT_SEMESTER: e.target.value,
+                  }))
                 }
-              />
+              >
+                <option value="">-- เลือกภาคเรียน --</option>
+                <option value="1">ภาคเรียนที่ 1</option>
+                <option value="2">ภาคเรียนที่ 2</option>
+              </Select>
             </Field>
-          ))}
 
-          <Field label="ภาคเรียน">
-            <Select
-              value={settings.CURRENT_SEMESTER || ""}
-              onChange={(e) =>
-                setSettings((s) => ({
-                  ...s,
-                  CURRENT_SEMESTER: e.target.value,
-                }))
-              }
-            >
-              <option value="">-- เลือกภาคเรียน --</option>
-              <option value="1">ภาคเรียนที่ 1</option>
-              <option value="2">ภาคเรียนที่ 2</option>
-            </Select>
-          </Field>
+            <div className="flex justify-end border-t border-slate-100 pt-4">
+              <Button onClick={saveSettings} disabled={saving}>
+                <i className="fa-solid fa-floppy-disk" />
+                {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
+              </Button>
+            </div>
+          </div>
 
-          <div className="space-y-3 border-t border-slate-100 pt-4">
-            <h4 className="text-sm font-bold text-slate-700">รูปตัวอย่างฟอร์ม</h4>
-            <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800">รูปตัวอย่างฟอร์ม</h3>
+              <p className="mt-1 text-sm text-slate-500">
+                อัปโหลดแล้วกดบันทึกการตั้งค่าด้านซ้าย
+              </p>
+            </div>
+            <div className="space-y-3">
               {(["bike", "plate", "rider"] as const).map((kind) => (
                 <div
                   key={kind}
-                  className="flex flex-col items-center rounded-xl border border-slate-200 bg-slate-50 p-3"
+                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                 >
-                  <span className="mb-2 text-[10px] font-bold text-slate-500">
-                    {kind}
-                  </span>
+                  <div className="mb-2 text-sm font-bold text-slate-700">
+                    {kind === "bike"
+                      ? "รูปรถ"
+                      : kind === "plate"
+                        ? "รูปป้ายทะเบียน"
+                        : "รูปผู้ขับขี่"}
+                  </div>
                   <input
                     type="file"
                     accept="image/*"
-                    className="text-[10px]"
+                    className="block w-full text-xs text-slate-500"
                     onChange={(e) => {
                       const f = e.target.files?.[0];
-                      if (f) uploadSample(kind, f).catch((err) =>
-                        toast.error(err.message),
-                      );
+                      if (f)
+                        uploadSample(kind, f).catch((err) =>
+                          toast.error(err.message),
+                        );
                     }}
                   />
                 </div>
               ))}
             </div>
           </div>
-
-          <div className="flex justify-end border-t border-slate-100 pt-4">
-            <Button onClick={saveSettings} disabled={saving}>
-              <i className="fa-solid fa-floppy-disk" />
-              {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
-            </Button>
-          </div>
         </div>
       )}
 
       {edit && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4">
-          <div className="relative my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="relative my-8 w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
             <button
               type="button"
               className="absolute right-4 top-4 text-slate-400 hover:text-slate-700"
@@ -587,14 +898,19 @@ export default function AdminPage() {
                   <Field label="ผู้ซ้อนท้าย">
                     <Input
                       name="pillionName"
-                      defaultValue={edit.pillion_name === "-" ? "" : edit.pillion_name}
+                      defaultValue={
+                        edit.pillion_name === "-" ? "" : edit.pillion_name
+                      }
                     />
                   </Field>
                 </div>
               </div>
               <div className="flex gap-4">
                 {(["มี", "ไม่มี"] as const).map((v) => (
-                  <label key={v} className="flex items-center gap-2 text-sm font-bold">
+                  <label
+                    key={v}
+                    className="flex items-center gap-2 text-sm font-bold"
+                  >
                     <input
                       type="radio"
                       name="helmet"
@@ -615,7 +931,7 @@ export default function AdminPage() {
                       src={
                         editFiles[kind]
                           ? `/api/files/${editFiles[kind]}`
-                          : edit[`${kind}_url` as keyof RegRow] || ""
+                          : (edit[`${kind}_url` as keyof RegRow] as string) || ""
                       }
                       alt=""
                       className="mx-auto mb-2 h-16 w-16 rounded-lg object-cover"
@@ -631,7 +947,11 @@ export default function AdminPage() {
                 ))}
               </div>
               <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
-                <Button type="button" variant="secondary" onClick={() => setEdit(null)}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setEdit(null)}
+                >
                   ยกเลิก
                 </Button>
                 <Button type="submit" disabled={saving}>

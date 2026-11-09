@@ -421,6 +421,8 @@ export async function createRegistration(
     created_at: now,
     updated_at: now,
     status: "active",
+    student_id: normalizeStudentId(input.student_id),
+    phone: normalizeThaiPhone(input.phone),
     pillion_name: input.pillion_name || "-",
   };
   await appendRow("Registrations", registrationToRow(reg), "USER_ENTERED");

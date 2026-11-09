@@ -5,6 +5,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AdminRegistrationsTable } from "@/components/admin-registrations-table";
+import { AdminRegistrationsTable } from "@/components/admin-registrations-table";
 import {
   ImageThumbnails,
   registrationImages,

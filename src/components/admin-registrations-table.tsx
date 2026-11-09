@@ -50,6 +50,20 @@ export function AdminRegistrationsTable({
   const columns = useMemo<ColumnDef<AdminRegRow, unknown>[]>(
     () => [
       {
+        id: "seq",
+        enableSorting: false,
+        header: "#",
+        cell: ({ row, table }) => {
+          const { pageIndex, pageSize } = table.getState().pagination;
+          const seq = pageIndex * pageSize + row.index + 1;
+          return (
+            <span className="tabular-nums text-xs font-bold text-slate-400">
+              {seq}
+            </span>
+          );
+        },
+      },
+      {
         id: "student",
         accessorFn: (r) =>
           `${r.prefix}${r.first_name} ${r.last_name} ${r.student_id} ${r.phone}`,

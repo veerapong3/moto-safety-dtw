@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { OptionListEditor } from "@/components/option-list-editor";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
@@ -68,6 +69,12 @@ function computeStats(rows: RegRow[]): DashboardStats {
 export default function AdminPage() {
   const router = useRouter();
   const [tab, setTab] = useState<"overview" | "data" | "settings">("overview");
+  const [settingsPanel, setSettingsPanel] = useState<
+    "general" | "datasets" | "samples"
+  >("datasets");
+  const [datasetKey, setDatasetKey] = useState<
+    "BRANDS" | "COLORS" | "GRADES" | "ROOMS"
+  >("BRANDS");
   const [rows, setRows] = useState<RegRow[]>([]);
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -678,128 +685,283 @@ export default function AdminPage() {
       )}
 
       {tab === "settings" && (
-        <div className="grid gap-5 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800">การตั้งค่าระบบ</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                ปรับค่าที่ใช้กับฟอร์มสาธารณะและสถานะรับลงทะเบียน
-              </p>
+        <div className="space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+            <div className="flex flex-wrap gap-1">
+              {(
+                [
+                  {
+                    id: "datasets" as const,
+                    label: "ชุดข้อมูลฟอร์ม",
+                    icon: "fa-database",
+                  },
+                  {
+                    id: "general" as const,
+                    label: "ทั่วไป",
+                    icon: "fa-sliders",
+                  },
+                  {
+                    id: "samples" as const,
+                    label: "รูปตัวอย่าง",
+                    icon: "fa-image",
+                  },
+                ] as const
+              ).map((panel) => (
+                <button
+                  key={panel.id}
+                  type="button"
+                  onClick={() => setSettingsPanel(panel.id)}
+                  className={`inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition ${
+                    settingsPanel === panel.id
+                      ? "bg-blue-700 text-white"
+                      : "text-slate-600 hover:bg-slate-100"
+                  }`}
+                >
+                  <i className={`fa-solid ${panel.icon}`} />
+                  {panel.label}
+                </button>
+              ))}
             </div>
+            <Button onClick={saveSettings} disabled={saving}>
+              <i className="fa-solid fa-floppy-disk" />
+              {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
+            </Button>
+          </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h4 className="text-sm font-bold text-slate-700">
-                    เปิด–ปิดรับลงทะเบียน
-                  </h4>
-                  <p className="mt-1 text-xs text-slate-500">
-                    สถานะปัจจุบัน:{" "}
-                    <span
-                      className={`font-bold ${
-                        open ? "text-emerald-700" : "text-rose-700"
-                      }`}
-                    >
-                      {open ? "เปิด" : "ปิด"}
-                    </span>
-                  </p>
+          {settingsPanel === "datasets" && (
+            <div className="space-y-5">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-800">
+                      จัดการชุดข้อมูลในฟอร์ม
+                    </h3>
+                    <p className="mt-1 text-sm text-slate-500">
+                      เพิ่ม แก้ไข ลบ และจัดลำดับรายการที่นักเรียนเลือกตอนลงทะเบียน
+                      แล้วกดบันทึกการตั้งค่า
+                    </p>
+                  </div>
                 </div>
-                <Button
-                  variant={open ? "danger" : "primary"}
-                  onClick={() =>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {(
+                    [
+                      {
+                        key: "BRANDS" as const,
+                        label: "ยี่ห้อรถ",
+                        icon: "fa-motorcycle",
+                      },
+                      {
+                        key: "COLORS" as const,
+                        label: "สีรถ",
+                        icon: "fa-palette",
+                      },
+                      {
+                        key: "GRADES" as const,
+                        label: "ระดับชั้น",
+                        icon: "fa-graduation-cap",
+                      },
+                      {
+                        key: "ROOMS" as const,
+                        label: "ห้องเรียน",
+                        icon: "fa-door-open",
+                      },
+                    ] as const
+                  ).map((item) => {
+                    const count = (settings[item.key] || "")
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean).length;
+                    return (
+                      <button
+                        key={item.key}
+                        type="button"
+                        onClick={() => setDatasetKey(item.key)}
+                        className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-bold transition ${
+                          datasetKey === item.key
+                            ? "border-blue-600 bg-blue-50 text-blue-800 ring-2 ring-blue-200"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
+                        }`}
+                      >
+                        <i className={`fa-solid ${item.icon}`} />
+                        {item.label}
+                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-slate-200">
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {datasetKey === "BRANDS" && (
+                <OptionListEditor
+                  title="ยี่ห้อรถ"
+                  description="รายการยี่ห้อที่แสดงในแบบฟอร์มลงทะเบียน"
+                  icon="fa-motorcycle"
+                  value={settings.BRANDS || ""}
+                  onChange={(next) =>
+                    setSettings((s) => ({ ...s, BRANDS: next }))
+                  }
+                  placeholder="เช่น Honda, Yamaha, GPX"
+                />
+              )}
+              {datasetKey === "COLORS" && (
+                <OptionListEditor
+                  title="สีรถ"
+                  description="รายการสีที่แสดงในแบบฟอร์มลงทะเบียน"
+                  icon="fa-palette"
+                  value={settings.COLORS || ""}
+                  onChange={(next) =>
+                    setSettings((s) => ({ ...s, COLORS: next }))
+                  }
+                  placeholder="เช่น แดง, ดำ, ขาว"
+                />
+              )}
+              {datasetKey === "GRADES" && (
+                <OptionListEditor
+                  title="ระดับชั้น"
+                  description="ระดับชั้นที่นักเรียนเลือกได้ตอนลงทะเบียน"
+                  icon="fa-graduation-cap"
+                  value={settings.GRADES || ""}
+                  onChange={(next) =>
+                    setSettings((s) => ({ ...s, GRADES: next }))
+                  }
+                  placeholder="เช่น ม.1"
+                />
+              )}
+              {datasetKey === "ROOMS" && (
+                <OptionListEditor
+                  title="ห้องเรียน"
+                  description="หมายเลขห้องที่แสดงในแบบฟอร์ม"
+                  icon="fa-door-open"
+                  value={settings.ROOMS || ""}
+                  onChange={(next) =>
+                    setSettings((s) => ({ ...s, ROOMS: next }))
+                  }
+                  placeholder="เช่น 1"
+                />
+              )}
+            </div>
+          )}
+
+          {settingsPanel === "general" && (
+            <div className="max-w-3xl space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">
+                  การตั้งค่าทั่วไป
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  สถานะระบบ ปีการศึกษา และข้อความที่แสดงต่อสาธารณะ
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-700">
+                      เปิด–ปิดรับลงทะเบียน
+                    </h4>
+                    <p className="mt-1 text-xs text-slate-500">
+                      สถานะปัจจุบัน:{" "}
+                      <span
+                        className={`font-bold ${
+                          open ? "text-emerald-700" : "text-rose-700"
+                        }`}
+                      >
+                        {open ? "เปิด" : "ปิด"}
+                      </span>
+                    </p>
+                  </div>
+                  <Button
+                    variant={open ? "danger" : "primary"}
+                    onClick={() =>
+                      setSettings((s) => ({
+                        ...s,
+                        REGISTRATION_OPEN: open ? "false" : "true",
+                      }))
+                    }
+                  >
+                    สลับเป็น {open ? "ปิดรับข้อมูล" : "เปิดรับข้อมูล"}
+                  </Button>
+                </div>
+              </div>
+
+              {(
+                [
+                  ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา (เช่น 2569)"],
+                  ["CONTACT_EMAIL", "อีเมลติดต่อ"],
+                  ["CLOSED_MESSAGE", "ข้อความตอนปิดระบบ"],
+                  ["DRIVE_ROOT_FOLDER_ID", "Drive Root Folder ID"],
+                ] as const
+              ).map(([key, label]) => (
+                <Field key={key} label={label}>
+                  <Input
+                    value={settings[key] || ""}
+                    onChange={(e) =>
+                      setSettings((s) => ({ ...s, [key]: e.target.value }))
+                    }
+                  />
+                </Field>
+              ))}
+
+              <Field label="ภาคเรียน">
+                <Select
+                  value={settings.CURRENT_SEMESTER || ""}
+                  onChange={(e) =>
                     setSettings((s) => ({
                       ...s,
-                      REGISTRATION_OPEN: open ? "false" : "true",
+                      CURRENT_SEMESTER: e.target.value,
                     }))
                   }
                 >
-                  สลับเป็น {open ? "ปิดรับข้อมูล" : "เปิดรับข้อมูล"}
-                </Button>
+                  <option value="">-- เลือกภาคเรียน --</option>
+                  <option value="1">ภาคเรียนที่ 1</option>
+                  <option value="2">ภาคเรียนที่ 2</option>
+                </Select>
+              </Field>
+            </div>
+          )}
+
+          {settingsPanel === "samples" && (
+            <div className="max-w-3xl space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">
+                  รูปตัวอย่างฟอร์ม
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  อัปโหลดแล้วกดบันทึกการตั้งค่าด้านบน
+                </p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                {(["bike", "plate", "rider"] as const).map((kind) => (
+                  <div
+                    key={kind}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <div className="mb-3 text-sm font-bold text-slate-700">
+                      {kind === "bike"
+                        ? "รูปรถ"
+                        : kind === "plate"
+                          ? "รูปป้ายทะเบียน"
+                          : "รูปผู้ขับขี่"}
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="block w-full text-xs text-slate-500"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f)
+                          uploadSample(kind, f).catch((err) =>
+                            toast.error(err.message),
+                          );
+                      }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
-
-            {(
-              [
-                ["GRADES", "ระดับชั้น (คั่นด้วย ,)"],
-                ["ROOMS", "ห้องเรียน (คั่นด้วย ,)"],
-                ["BRANDS", "ยี่ห้อรถ (คั่นด้วย ,)"],
-                ["COLORS", "สีรถ (คั่นด้วย ,)"],
-                ["CURRENT_ACADEMIC_YEAR", "ปีการศึกษา (เช่น 2569)"],
-                ["CONTACT_EMAIL", "อีเมลติดต่อ"],
-                ["CLOSED_MESSAGE", "ข้อความตอนปิดระบบ"],
-                ["DRIVE_ROOT_FOLDER_ID", "Drive Root Folder ID"],
-              ] as const
-            ).map(([key, label]) => (
-              <Field key={key} label={label}>
-                <Input
-                  value={settings[key] || ""}
-                  onChange={(e) =>
-                    setSettings((s) => ({ ...s, [key]: e.target.value }))
-                  }
-                />
-              </Field>
-            ))}
-
-            <Field label="ภาคเรียน">
-              <Select
-                value={settings.CURRENT_SEMESTER || ""}
-                onChange={(e) =>
-                  setSettings((s) => ({
-                    ...s,
-                    CURRENT_SEMESTER: e.target.value,
-                  }))
-                }
-              >
-                <option value="">-- เลือกภาคเรียน --</option>
-                <option value="1">ภาคเรียนที่ 1</option>
-                <option value="2">ภาคเรียนที่ 2</option>
-              </Select>
-            </Field>
-
-            <div className="flex justify-end border-t border-slate-100 pt-4">
-              <Button onClick={saveSettings} disabled={saving}>
-                <i className="fa-solid fa-floppy-disk" />
-                {saving ? "กำลังบันทึก..." : "บันทึกการตั้งค่า"}
-              </Button>
-            </div>
-          </div>
-
-          <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-800">รูปตัวอย่างฟอร์ม</h3>
-              <p className="mt-1 text-sm text-slate-500">
-                อัปโหลดแล้วกดบันทึกการตั้งค่าด้านซ้าย
-              </p>
-            </div>
-            <div className="space-y-3">
-              {(["bike", "plate", "rider"] as const).map((kind) => (
-                <div
-                  key={kind}
-                  className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
-                >
-                  <div className="mb-2 text-sm font-bold text-slate-700">
-                    {kind === "bike"
-                      ? "รูปรถ"
-                      : kind === "plate"
-                        ? "รูปป้ายทะเบียน"
-                        : "รูปผู้ขับขี่"}
-                  </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="block w-full text-xs text-slate-500"
-                    onChange={(e) => {
-                      const f = e.target.files?.[0];
-                      if (f)
-                        uploadSample(kind, f).catch((err) =>
-                          toast.error(err.message),
-                        );
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
         </div>
       )}
 

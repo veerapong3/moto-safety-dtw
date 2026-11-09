@@ -20,6 +20,7 @@ Share Spreadsheet ให้ Service Account เป็น **Editor**
 - `status`: `active` | `deleted`
 - `id`: เช่น `MOTO-A1B2C3D4`
 - `phone` / `student_id`: เก็บเป็นข้อความ (text) เพื่อไม่ให้ Google Sheets ตัดเลข `0` นำหน้า — ระบบเขียนด้วย `USER_ENTERED` + prefix `'`
+- `phone` / `student_id`: เก็บเป็นข้อความ (text) เพื่อไม่ให้ Google Sheets ตัดเลข `0` นำหน้า — ระบบเขียนด้วย `USER_ENTERED` + prefix `'`
 - `phone` / `student_id` / `room`: ระบบเขียนด้วย prefix `'` เพื่อบังคับเป็นข้อความใน Sheets ไม่ให้เลข `0` นำหน้าถูกตัด (เช่น `0812345678`)
 
 ## Settings

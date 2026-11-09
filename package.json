@@ -12,7 +12,7 @@
     "oauth:drive": "npx tsx scripts/get-drive-oauth-token.ts"
   },
   "dependencies": {
-    "@tanstack/react-table": "^9.3.1",
+    "@tanstack/react-table": "^8.21.3",
     "@vercel/blob": "^2.8.2",
     "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",

@@ -6,6 +6,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type ColumnDef,
+  type PaginationState,
   type SortingState,
   useReactTable,
 } from "@tanstack/react-table";
@@ -37,9 +38,16 @@ export function AdminRegistrationsTable({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "created_at", desc: true },
   ]);
-  const [pageSize, setPageSize] = useState(10);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
-  const columns = useMemo<ColumnDef<AdminRegRow>[]>(
+  useEffect(() => {
+    setPagination((p) => ({ ...p, pageIndex: 0 }));
+  }, [data]);
+
+  const columns = useMemo<ColumnDef<AdminRegRow, unknown>[]>(
     () => [
       {
         id: "student",
@@ -162,23 +170,17 @@ export function AdminRegistrationsTable({
   const table = useReactTable({
     data,
     columns,
-    state: { sorting },
+    state: { sorting, pagination },
     onSortingChange: setSorting,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      pagination: { pageSize: 10 },
-    },
   });
 
-  useEffect(() => {
-    table.setPageSize(pageSize);
-    table.setPageIndex(0);
-  }, [pageSize, table, data]);
-
   const pageCount = table.getPageCount();
-  const pageIndex = table.getState().pagination.pageIndex;
+  const pageIndex = pagination.pageIndex;
+  const pageSize = pagination.pageSize;
   const total = data.length;
   const from = total === 0 ? 0 : pageIndex * pageSize + 1;
   const to = Math.min(total, (pageIndex + 1) * pageSize);
@@ -201,7 +203,12 @@ export function AdminRegistrationsTable({
           แสดงต่อหน้า
           <select
             value={pageSize}
-            onChange={(e) => setPageSize(Number(e.target.value))}
+            onChange={(e) =>
+              setPagination({
+                pageIndex: 0,
+                pageSize: Number(e.target.value),
+              })
+            }
             className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800"
           >
             {[10, 25, 50, 100].map((n) => (

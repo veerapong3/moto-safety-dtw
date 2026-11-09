@@ -317,22 +317,22 @@ export default function HomePage() {
 
       {stats && <DashboardCharts stats={stats} />}
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-blue-100 text-xl text-blue-700">
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white p-7 shadow-sm sm:p-9">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-3xl bg-blue-100 text-2xl text-blue-700">
               <i className="fa-solid fa-book-open" />
             </span>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-extrabold text-slate-900">
+              <h3 className="text-xl font-extrabold text-slate-900 sm:text-2xl">
                 คู่มือการกรอกสำหรับนักเรียน
               </h3>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+              <p className="mt-2 text-base leading-relaxed text-slate-600">
                 อ่านวิธีกรอกข้อมูล รูปแบบทะเบียน และตัวอย่างรูปหลักฐานก่อนเริ่มลงทะเบียน
               </p>
               <Link
                 href="/guide"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
+                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-blue-700 px-6 py-3.5 text-base font-bold text-white transition hover:bg-blue-800"
               >
                 <i className="fa-solid fa-book-open" />
                 เปิดคู่มือ
@@ -341,22 +341,22 @@ export default function HomePage() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-700 to-sky-600 p-6 text-white shadow-md">
-          <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/15 text-xl">
+        <div className="overflow-hidden rounded-3xl border border-blue-100 bg-gradient-to-r from-blue-700 to-sky-600 p-7 text-white shadow-md sm:p-9">
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
+            <span className="grid h-16 w-16 shrink-0 place-items-center rounded-3xl bg-white/15 text-2xl">
               <i className="fa-solid fa-clipboard-list" />
             </span>
             <div className="min-w-0 flex-1">
-              <h3 className="text-lg font-extrabold">
+              <h3 className="text-xl font-extrabold sm:text-2xl">
                 ยังไม่มีข้อมูลในระบบใช่ไหม?
               </h3>
-              <p className="mt-1 text-sm leading-relaxed text-blue-100">
+              <p className="mt-2 text-base leading-relaxed text-blue-100">
                 หากตรวจสอบทะเบียนแล้วไม่พบ หรือยังไม่ได้บันทึก —
                 ลงทะเบียนรถจักรยานยนต์ได้ทันที
               </p>
               <Link
                 href="/form"
-                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-yellow-400 px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-yellow-300"
+                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-yellow-400 px-6 py-3.5 text-base font-bold text-slate-900 transition hover:bg-yellow-300"
               >
                 <i className="fa-solid fa-pen-to-square" />
                 ลงทะเบียนเลย

@@ -100,29 +100,29 @@ const mistakes = [
 
 export default function GuidePage() {
   return (
-    <div className="mx-auto max-w-3xl space-y-6 pb-16">
-      <header className="overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-8 text-white shadow-lg shadow-blue-900/20 sm:px-8">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-200/90">
+    <div className="mx-auto max-w-5xl space-y-7 pb-20">
+      <header className="overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-7 py-10 text-white shadow-lg shadow-blue-900/20 sm:px-10 sm:py-12">
+        <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-200/90">
           คู่มือนักเรียน · อ่านได้โดยไม่ต้องเข้าสู่ระบบ
         </p>
-        <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+        <h1 className="font-display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">
           วิธีกรอกแบบฟอร์ม MOTO-Safety
         </h1>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-blue-100/90">
+        <p className="mt-4 max-w-2xl text-base leading-relaxed text-blue-100/90 sm:text-lg">
           อ่านก่อนกรอก 1–2 นาที จะช่วยให้ลงทะเบียนสำเร็จเร็วขึ้น
           และลดโอกาสกรอกผิดหรืออัปโหลดรูปไม่ครบ
         </p>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/form"
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-2.5 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
+            className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-base font-bold text-slate-900 transition hover:bg-amber-300"
           >
             <i className="fa-solid fa-pen-to-square" />
             ไปหน้าลงทะเบียน
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur-sm transition hover:bg-white/15"
+            className="inline-flex items-center gap-2 rounded-2xl border border-white/25 bg-white/10 px-6 py-3.5 text-base font-semibold text-white backdrop-blur-sm transition hover:bg-white/15"
           >
             <i className="fa-solid fa-magnifying-glass" />
             ตรวจทะเบียนก่อน
@@ -130,52 +130,52 @@ export default function GuidePage() {
         </div>
       </header>
 
-      <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
-        <div className="border-b border-slate-100 px-5 py-4 sm:px-7">
-          <h2 className="font-display text-lg font-semibold text-slate-900">
+      <section className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-sm">
+        <div className="border-b border-slate-100 px-7 py-6 sm:px-10">
+          <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
             ภาพรวมหน้าลงทะเบียน
           </h2>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1.5 text-sm text-slate-500">
             หน้านี้เปิดให้อ่านได้ทุกคน ไม่ต้อง login
           </p>
         </div>
-        <div className="bg-slate-50 p-3 sm:p-4">
+        <div className="bg-slate-50 p-4 sm:p-6">
           <Image
             src="/guide/01-overview.png"
             alt="ภาพรวมหน้าลงทะเบียน MOTO-Safety"
             width={768}
             height={287}
-            className="h-auto w-full rounded-2xl border border-slate-200 bg-white shadow-sm"
+            className="h-auto w-full rounded-3xl border border-slate-200 bg-white shadow-sm"
             priority
           />
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <h2 className="font-display text-lg font-semibold text-slate-900">
+      <section className="rounded-[2rem] border border-slate-200/80 bg-white p-7 shadow-sm sm:p-10">
+        <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
           ก่อนเริ่มกรอก
         </h2>
-        <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-600">
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+        <ul className="mt-6 space-y-4 text-base leading-relaxed text-slate-600">
+          <li className="flex gap-4">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-bold text-blue-800">
               1
             </span>
             เตรียมบัตรนักเรียน เบอร์โทรติดต่อ และดูป้ายทะเบียนให้ชัด
           </li>
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+          <li className="flex gap-4">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-bold text-blue-800">
               2
             </span>
             ถ่ายรูปไว้ล่วงหน้า 3 รูป: รถทั้งคัน ป้ายทะเบียน และผู้ขับขี่
           </li>
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+          <li className="flex gap-4">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-bold text-blue-800">
               3
             </span>
             ใช้มือถือหรือคอมพิวเตอร์ที่เชื่อมอินเทอร์เน็ตได้เสถียร
           </li>
-          <li className="flex gap-3">
-            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-blue-100 text-xs font-bold text-blue-800">
+          <li className="flex gap-4">
+            <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-100 text-sm font-bold text-blue-800">
               4
             </span>
             ถ้าไม่แน่ใจว่ารถลงทะเบียนแล้วหรือยัง ให้ไปหน้าแรกกด “ตรวจสอบข้อมูล” ก่อน
@@ -186,38 +186,38 @@ export default function GuidePage() {
       {steps.map((step) => (
         <section
           key={step.n}
-          className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm"
+          className="overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-sm"
         >
-          <div className="flex items-start gap-3 px-5 py-5 sm:px-7">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+          <div className="flex items-start gap-4 px-7 py-7 sm:px-10">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-blue-700 text-lg font-bold text-white">
               {step.n}
             </span>
             <div>
-              <h2 className="font-display text-lg font-semibold text-slate-900">
+              <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
                 {step.title}
               </h2>
-              <p className="mt-0.5 text-xs text-slate-500">{step.desc}</p>
+              <p className="mt-1 text-sm text-slate-500 sm:text-base">{step.desc}</p>
             </div>
           </div>
 
-          <div className="bg-slate-50 px-3 pb-3 sm:px-4 sm:pb-4">
+          <div className="bg-slate-50 px-4 pb-4 sm:px-6 sm:pb-6">
             <Image
               src={step.image}
               alt={step.imageAlt}
               width={768}
               height={400}
-              className="h-auto w-full rounded-2xl border border-slate-200 bg-white shadow-sm"
+              className="h-auto w-full rounded-3xl border border-slate-200 bg-white shadow-sm"
             />
           </div>
 
-          <div className="space-y-3 px-5 py-5 sm:px-7">
+          <div className="space-y-4 px-7 py-7 sm:px-10">
             {step.items.map((item) => (
               <div
                 key={item.label}
-                className="rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3"
+                className="rounded-3xl border border-slate-100 bg-slate-50/80 px-5 py-4"
               >
-                <p className="text-sm font-bold text-slate-800">{item.label}</p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                <p className="text-base font-bold text-slate-800">{item.label}</p>
+                <p className="mt-1.5 text-base leading-relaxed text-slate-600">
                   {item.tip}
                 </p>
               </div>
@@ -226,21 +226,21 @@ export default function GuidePage() {
         </section>
       ))}
 
-      <section className="rounded-3xl border border-amber-200/80 bg-amber-50/60 p-5 shadow-sm sm:p-7">
-        <h2 className="font-display text-lg font-semibold text-slate-900">
+      <section className="rounded-[2rem] border border-amber-200/80 bg-amber-50/60 p-7 shadow-sm sm:p-10">
+        <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
           <i className="fa-solid fa-triangle-exclamation mr-2 text-amber-500" />
           จุดที่มักกรอกผิด
         </h2>
-        <div className="mt-4 space-y-3">
+        <div className="mt-6 space-y-4">
           {mistakes.map((m) => (
             <div
               key={m.bad}
-              className="grid gap-2 rounded-2xl border border-amber-100 bg-white px-4 py-3 sm:grid-cols-2"
+              className="grid gap-3 rounded-3xl border border-amber-100 bg-white px-5 py-4 sm:grid-cols-2"
             >
-              <p className="text-sm text-rose-700">
+              <p className="text-base text-rose-700">
                 <span className="font-bold">ผิด:</span> {m.bad}
               </p>
-              <p className="text-sm text-emerald-700">
+              <p className="text-base text-emerald-700">
                 <span className="font-bold">ถูก:</span> {m.good}
               </p>
             </div>
@@ -248,11 +248,11 @@ export default function GuidePage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-7">
-        <h2 className="font-display text-lg font-semibold text-slate-900">
+      <section className="rounded-[2rem] border border-slate-200/80 bg-white p-7 shadow-sm sm:p-10">
+        <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
           หลังกดบันทึกแล้วทำอะไรต่อ
         </h2>
-        <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+        <ol className="mt-6 list-decimal space-y-3 pl-6 text-base leading-relaxed text-slate-600">
           <li>ถ้าสำเร็จ ระบบจะแจ้ง “ลงทะเบียนสำเร็จ”</li>
           <li>
             กลับหน้าแรก แล้วพิมพ์เลขทะเบียนเดิมอีกครั้งเพื่อยืนยันว่าพบในระบบ
@@ -265,17 +265,17 @@ export default function GuidePage() {
             หากระบบปิดรับลงทะเบียนชั่วคราว ให้รอประกาศจากโรงเรียนแล้วค่อยกลับมาใหม่
           </li>
         </ol>
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-wrap gap-3">
           <Link
             href="/form"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-2.5 text-sm font-bold text-white transition hover:bg-blue-800"
+            className="inline-flex items-center gap-2 rounded-2xl bg-blue-700 px-6 py-3.5 text-base font-bold text-white transition hover:bg-blue-800"
           >
             <i className="fa-solid fa-arrow-right" />
             เริ่มกรอกแบบฟอร์ม
           </Link>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-6 py-3.5 text-base font-semibold text-slate-700 transition hover:bg-slate-100"
           >
             กลับหน้าแรก
           </Link>

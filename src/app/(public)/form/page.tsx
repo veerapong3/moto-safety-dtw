@@ -178,24 +178,24 @@ export default function FormPage() {
   ).length;
 
   return (
-    <div className="mx-auto max-w-3xl pb-24">
-      <header className="animate-fade-up mb-8 overflow-hidden rounded-3xl bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-6 py-8 text-white shadow-lg shadow-blue-900/20 sm:px-8">
-        <p className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
+    <div className="mx-auto max-w-5xl pb-24">
+      <header className="animate-fade-up mb-8 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-7 py-10 text-white shadow-lg shadow-blue-900/20 sm:px-10 sm:py-12">
+        <p className="font-display text-4xl font-bold tracking-tight sm:text-5xl">
           MOTO-Safety
         </p>
-        <h1 className="mt-3 text-lg font-semibold text-white/95 sm:text-xl">
+        <h1 className="mt-4 text-xl font-semibold text-white/95 sm:text-2xl">
           ลงทะเบียนรถจักรยานยนต์นักเรียน
         </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-blue-100/85">
+        <p className="mt-3 max-w-2xl text-base leading-relaxed text-blue-100/85">
           กรอกข้อมูลจริงให้ครบ 3 ส่วน แล้วอัปโหลดรูปหลักฐานก่อนกดบันทึก
         </p>
-        <ol className="mt-6 flex flex-wrap gap-2 text-xs font-semibold">
+        <ol className="mt-7 flex flex-wrap gap-3 text-sm font-semibold">
           {["ข้อมูลนักเรียน", "ข้อมูลรถ", "รูปหลักฐาน"].map((step, i) => (
             <li
               key={step}
-              className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 backdrop-blur-sm"
+              className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-4 py-2.5 backdrop-blur-sm"
             >
-              <span className="grid h-5 w-5 place-items-center rounded-full bg-amber-400 text-[11px] font-bold text-slate-900">
+              <span className="grid h-7 w-7 place-items-center rounded-full bg-amber-400 text-xs font-bold text-slate-900">
                 {i + 1}
               </span>
               {step}
@@ -204,27 +204,27 @@ export default function FormPage() {
         </ol>
         <Link
           href="/guide"
-          className="mt-5 inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold text-blue-50 backdrop-blur-sm transition hover:bg-white/15"
+          className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-semibold text-blue-50 backdrop-blur-sm transition hover:bg-white/15"
         >
           <i className="fa-solid fa-book-open" />
           อ่านคู่มือการกรอกก่อนเริ่ม
         </Link>
       </header>
 
-      <form onSubmit={onSubmit} className="space-y-5">
-        <section className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7">
-          <div className="mb-5 flex items-center gap-3">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+      <form onSubmit={onSubmit} className="space-y-7">
+        <section className="animate-slide-in rounded-[2rem] border border-slate-200/80 bg-white/95 p-7 shadow-sm shadow-slate-200/50 sm:p-10">
+          <div className="mb-7 flex items-center gap-4">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-blue-700 text-lg font-bold text-white">
               1
             </span>
             <div>
-              <h2 className="font-display text-lg font-semibold text-slate-900">
+              <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
                 ข้อมูลส่วนตัวนักเรียน
               </h2>
-              <p className="text-xs text-slate-500">ตามบัตรนักเรียน / ทะเบียนบ้าน</p>
+              <p className="mt-0.5 text-sm text-slate-500">ตามบัตรนักเรียน / ทะเบียนบ้าน</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
             <Field label="คำนำหน้า *">
               <Select name="prefix" required defaultValue="">
                 <option value="">-- เลือก --</option>
@@ -284,21 +284,21 @@ export default function FormPage() {
         </section>
 
         <section
-          className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7"
+          className="animate-slide-in rounded-[2rem] border border-slate-200/80 bg-white/95 p-7 shadow-sm shadow-slate-200/50 sm:p-10"
           style={{ animationDelay: "60ms" }}
         >
-          <div className="mb-5 flex items-center gap-3">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+          <div className="mb-7 flex items-center gap-4">
+            <span className="grid h-12 w-12 place-items-center rounded-full bg-blue-700 text-lg font-bold text-white">
               2
             </span>
             <div>
-              <h2 className="font-display text-lg font-semibold text-slate-900">
+              <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
                 ข้อมูลรถและการใช้งาน
               </h2>
-              <p className="text-xs text-slate-500">ตามป้ายทะเบียนจริง</p>
+              <p className="mt-0.5 text-sm text-slate-500">ตามป้ายทะเบียนจริง</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <Field label="ยี่ห้อรถ *">
               <Select name="brand" required defaultValue="">
                 <option value="">-- เลือกยี่ห้อ --</option>
@@ -339,10 +339,10 @@ export default function FormPage() {
             </Field>
 
             <div className="md:col-span-2">
-              <span className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-600">
+              <span className="mb-3 block text-sm font-semibold tracking-wide text-slate-700">
                 การมีหมวกนิรภัย *
               </span>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {(
                   [
                     { value: "มี", label: "มีหมวกนิรภัย", icon: "fa-helmet-safety" },
@@ -351,19 +351,19 @@ export default function FormPage() {
                 ).map((opt) => (
                   <label
                     key={opt.value}
-                    className="group flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:ring-2 has-[:checked]:ring-blue-200"
+                    className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition has-[:checked]:border-blue-500 has-[:checked]:bg-blue-50 has-[:checked]:ring-2 has-[:checked]:ring-blue-200"
                   >
                     <input
                       type="radio"
                       name="helmet"
                       value={opt.value}
                       required
-                      className="accent-blue-700"
+                      className="h-5 w-5 accent-blue-700"
                     />
                     <i
-                      className={`fa-solid ${opt.icon} text-slate-400 group-has-[:checked]:text-blue-700`}
+                      className={`fa-solid ${opt.icon} text-xl text-slate-400 group-has-[:checked]:text-blue-700`}
                     />
-                    <span className="text-sm font-bold text-slate-700">
+                    <span className="text-base font-bold text-slate-700">
                       {opt.label}
                     </span>
                   </label>
@@ -380,24 +380,24 @@ export default function FormPage() {
         </section>
 
         <section
-          className="animate-slide-in rounded-3xl border border-slate-200/80 bg-white/95 p-5 shadow-sm shadow-slate-200/50 sm:p-7"
+          className="animate-slide-in rounded-[2rem] border border-slate-200/80 bg-white/95 p-7 shadow-sm shadow-slate-200/50 sm:p-10"
           style={{ animationDelay: "120ms" }}
         >
-          <div className="mb-2 flex flex-wrap items-end justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-blue-700 text-sm font-bold text-white">
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <span className="grid h-12 w-12 place-items-center rounded-full bg-blue-700 text-lg font-bold text-white">
                 3
               </span>
               <div>
-                <h2 className="font-display text-lg font-semibold text-slate-900">
+                <h2 className="font-display text-xl font-semibold text-slate-900 sm:text-2xl">
                   รูปหลักฐาน
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="mt-0.5 text-sm text-slate-500">
                   อัปโหลดครบ 3 รูป · ตอนนี้ {uploadedCount}/3
                 </p>
               </div>
             </div>
-            <div className="h-2 w-28 overflow-hidden rounded-full bg-slate-100">
+            <div className="h-2.5 w-36 overflow-hidden rounded-full bg-slate-100">
               <div
                 className="h-full rounded-full bg-amber-400 transition-all"
                 style={{ width: `${(uploadedCount / 3) * 100}%` }}
@@ -405,20 +405,20 @@ export default function FormPage() {
             </div>
           </div>
 
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
             {imgSlots.map((slot) => {
               const done = Boolean(fileIds[slot.key]);
               const busy = uploading === slot.key;
               return (
                 <div
                   key={slot.key}
-                  className={`flex flex-col overflow-hidden rounded-2xl border-2 border-dashed transition ${
+                  className={`flex flex-col overflow-hidden rounded-3xl border-2 border-dashed transition ${
                     done
                       ? "border-emerald-300 bg-emerald-50/50"
                       : "border-slate-200 bg-slate-50/80"
                   }`}
                 >
-                  <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-200/60">
+                  <div className="relative flex aspect-[4/3] min-h-[11rem] items-center justify-center overflow-hidden bg-slate-200/60 sm:min-h-[14rem]">
                     {previews[slot.key] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -430,32 +430,32 @@ export default function FormPage() {
                       />
                     ) : (
                       <i
-                        className={`fa-solid ${slot.icon} text-4xl text-slate-300`}
+                        className={`fa-solid ${slot.icon} text-5xl text-slate-300`}
                       />
                     )}
                     {!done && previews[slot.key] && (
-                      <span className="absolute left-2 top-2 rounded-full bg-slate-900/70 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white">
+                      <span className="absolute left-3 top-3 rounded-full bg-slate-900/70 px-2.5 py-1 text-xs font-bold tracking-wide text-white">
                         ตัวอย่าง
                       </span>
                     )}
                     {done && (
-                      <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-emerald-500 text-white shadow">
-                        <i className="fa-solid fa-check text-xs" />
+                      <span className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-emerald-500 text-white shadow">
+                        <i className="fa-solid fa-check text-sm" />
                       </span>
                     )}
                     {busy && (
                       <div className="absolute inset-0 grid place-items-center bg-slate-900/40">
-                        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-1 flex-col gap-2 p-3">
+                  <div className="flex flex-1 flex-col gap-3 p-4 sm:p-5">
                     <div>
-                      <p className="text-xs font-bold text-slate-700">
+                      <p className="text-sm font-bold text-slate-700">
                         {slot.label}{" "}
                         <span className="text-rose-500">*</span>
                       </p>
-                      <p className="text-[11px] text-slate-400">{slot.hint}</p>
+                      <p className="mt-0.5 text-xs text-slate-400">{slot.hint}</p>
                     </div>
                     <input
                       type="file"
@@ -472,9 +472,9 @@ export default function FormPage() {
                       onClick={() =>
                         document.getElementById(`file-${slot.key}`)?.click()
                       }
-                      className="mt-auto rounded-xl bg-blue-700 px-3 py-2 text-xs font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
+                      className="mt-auto rounded-2xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
                     >
-                      <i className="fa-solid fa-camera mr-1.5" />
+                      <i className="fa-solid fa-camera mr-2" />
                       {done ? "เปลี่ยนรูป" : busy ? "กำลังอัปโหลด..." : "เลือกรูป"}
                     </button>
                   </div>
@@ -484,11 +484,11 @@ export default function FormPage() {
           </div>
         </section>
 
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
-          <div className="mx-auto flex max-w-3xl flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-4 py-4 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+          <div className="mx-auto flex max-w-5xl flex-col-reverse gap-3 sm:flex-row sm:justify-between">
             <Link
               href="/"
-              className="inline-flex items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold text-slate-600 hover:bg-slate-100"
+              className="inline-flex items-center justify-center rounded-2xl px-5 py-3.5 text-base font-semibold text-slate-600 hover:bg-slate-100"
             >
               <i className="fa-solid fa-arrow-left mr-2" />
               กลับหน้าแรก
@@ -496,7 +496,7 @@ export default function FormPage() {
             <Button
               type="submit"
               disabled={loading || Boolean(uploading)}
-              className="px-8 py-3.5 text-base"
+              className="px-10 py-4 text-lg"
             >
               <i className="fa-solid fa-cloud-arrow-up" />
               {loading ? "กำลังบันทึก..." : "บันทึกและลงทะเบียน"}

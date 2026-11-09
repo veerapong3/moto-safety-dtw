@@ -425,13 +425,18 @@ export default function FormPage() {
                         src={previews[slot.key]}
                         alt={slot.label}
                         className={`h-full w-full object-cover transition ${
-                          done ? "" : "opacity-40"
+                          done ? "" : "opacity-55"
                         }`}
                       />
                     ) : (
                       <i
                         className={`fa-solid ${slot.icon} text-4xl text-slate-300`}
                       />
+                    )}
+                    {!done && previews[slot.key] && (
+                      <span className="absolute left-2 top-2 rounded-full bg-slate-900/70 px-2 py-0.5 text-[10px] font-bold tracking-wide text-white">
+                        ตัวอย่าง
+                      </span>
                     )}
                     {done && (
                       <span className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-emerald-500 text-white shadow">

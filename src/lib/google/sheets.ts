@@ -244,13 +244,13 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     ),
     sampleBikeUrl: map.SAMPLE_BIKE_FILE_ID
       ? `/api/files/${map.SAMPLE_BIKE_FILE_ID}`
-      : "",
+      : "/samples/bike.jpg",
     samplePlateUrl: map.SAMPLE_PLATE_FILE_ID
       ? `/api/files/${map.SAMPLE_PLATE_FILE_ID}`
-      : "",
+      : "/samples/plate.jpg",
     sampleRiderUrl: map.SAMPLE_RIDER_FILE_ID
       ? `/api/files/${map.SAMPLE_RIDER_FILE_ID}`
-      : "",
+      : "/samples/rider.jpg",
     schoolName: map.SCHOOL_NAME || "โรงเรียนดอนตาลวิทยา",
     appTitle: map.APP_TITLE || "MOTO-Safety DTW_School",
     contactEmail: map.CONTACT_EMAIL || "",

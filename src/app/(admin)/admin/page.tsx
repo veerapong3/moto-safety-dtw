@@ -800,118 +800,141 @@ export default function AdminPage() {
           </div>
 
           {settingsPanel === "datasets" && (
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-                <div className="flex flex-wrap items-end justify-between gap-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-800">
-                      จัดการชุดข้อมูลในฟอร์ม
-                    </h3>
-                    <p className="mt-1 text-sm text-slate-500">
-                      เพิ่ม แก้ไข ลบ และจัดลำดับรายการที่นักเรียนเลือกตอนลงทะเบียน
-                      แล้วกดบันทึกการตั้งค่า
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {(
-                    [
-                      {
-                        key: "BRANDS" as const,
-                        label: "ยี่ห้อรถ",
-                        icon: "fa-motorcycle",
-                      },
-                      {
-                        key: "COLORS" as const,
-                        label: "สีรถ",
-                        icon: "fa-palette",
-                      },
-                      {
-                        key: "GRADES" as const,
-                        label: "ระดับชั้น",
-                        icon: "fa-graduation-cap",
-                      },
-                      {
-                        key: "ROOMS" as const,
-                        label: "ห้องเรียน",
-                        icon: "fa-door-open",
-                      },
-                    ] as const
-                  ).map((item) => {
-                    const count = (settings[item.key] || "")
-                      .split(",")
-                      .map((s) => s.trim())
-                      .filter(Boolean).length;
-                    return (
-                      <button
-                        key={item.key}
-                        type="button"
-                        onClick={() => setDatasetKey(item.key)}
-                        className={`inline-flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm font-bold transition ${
-                          datasetKey === item.key
-                            ? "border-blue-600 bg-blue-50 text-blue-800 ring-2 ring-blue-200"
-                            : "border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300"
-                        }`}
-                      >
-                        <i className={`fa-solid ${item.icon}`} />
-                        {item.label}
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] text-slate-500 ring-1 ring-slate-200">
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
+                <h3 className="text-lg font-bold text-slate-900">
+                  ชุดข้อมูลฟอร์ม
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  จัดการรายการที่นักเรียนเลือกในฟอร์มลงทะเบียน
+                  หลังแก้ไขแล้วกดบันทึกการตั้งค่าด้านบน
+                </p>
               </div>
 
-              {datasetKey === "BRANDS" && (
-                <OptionListEditor
-                  title="ยี่ห้อรถ"
-                  description="รายการยี่ห้อที่แสดงในแบบฟอร์มลงทะเบียน"
-                  icon="fa-motorcycle"
-                  value={settings.BRANDS || ""}
-                  onChange={(next) =>
-                    setSettings((s) => ({ ...s, BRANDS: next }))
-                  }
-                  placeholder="เช่น Honda, Yamaha, GPX"
-                />
-              )}
-              {datasetKey === "COLORS" && (
-                <OptionListEditor
-                  title="สีรถ"
-                  description="รายการสีที่แสดงในแบบฟอร์มลงทะเบียน"
-                  icon="fa-palette"
-                  value={settings.COLORS || ""}
-                  onChange={(next) =>
-                    setSettings((s) => ({ ...s, COLORS: next }))
-                  }
-                  placeholder="เช่น แดง, ดำ, ขาว"
-                />
-              )}
-              {datasetKey === "GRADES" && (
-                <OptionListEditor
-                  title="ระดับชั้น"
-                  description="ระดับชั้นที่นักเรียนเลือกได้ตอนลงทะเบียน"
-                  icon="fa-graduation-cap"
-                  value={settings.GRADES || ""}
-                  onChange={(next) =>
-                    setSettings((s) => ({ ...s, GRADES: next }))
-                  }
-                  placeholder="เช่น ม.1"
-                />
-              )}
-              {datasetKey === "ROOMS" && (
-                <OptionListEditor
-                  title="ห้องเรียน"
-                  description="หมายเลขห้องที่แสดงในแบบฟอร์ม"
-                  icon="fa-door-open"
-                  value={settings.ROOMS || ""}
-                  onChange={(next) =>
-                    setSettings((s) => ({ ...s, ROOMS: next }))
-                  }
-                  placeholder="เช่น 1"
-                />
-              )}
+              <div className="grid lg:grid-cols-[240px_1fr]">
+                <aside className="border-b border-slate-100 bg-slate-50/80 p-3 lg:border-b-0 lg:border-r">
+                  <p className="px-3 pb-2 text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                    หมวดข้อมูล
+                  </p>
+                  <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:overflow-visible lg:pb-0">
+                    {(
+                      [
+                        {
+                          key: "BRANDS" as const,
+                          label: "ยี่ห้อรถ",
+                          icon: "fa-motorcycle",
+                          hint: "Honda, Yamaha...",
+                        },
+                        {
+                          key: "COLORS" as const,
+                          label: "สีรถ",
+                          icon: "fa-palette",
+                          hint: "แดง, ดำ, ขาว...",
+                        },
+                        {
+                          key: "GRADES" as const,
+                          label: "ระดับชั้น",
+                          icon: "fa-graduation-cap",
+                          hint: "ม.1–ม.6",
+                        },
+                        {
+                          key: "ROOMS" as const,
+                          label: "ห้องเรียน",
+                          icon: "fa-door-open",
+                          hint: "1, 2, 3...",
+                        },
+                      ] as const
+                    ).map((item) => {
+                      const count = (settings[item.key] || "")
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean).length;
+                      const active = datasetKey === item.key;
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          onClick={() => setDatasetKey(item.key)}
+                          className={`flex min-w-[11rem] items-center gap-3 rounded-2xl px-3 py-3 text-left transition lg:min-w-0 ${
+                            active
+                              ? "bg-white text-blue-800 shadow-sm ring-1 ring-blue-200"
+                              : "text-slate-600 hover:bg-white/80"
+                          }`}
+                        >
+                          <span
+                            className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${
+                              active
+                                ? "bg-blue-700 text-white"
+                                : "bg-white text-slate-500 ring-1 ring-slate-200"
+                            }`}
+                          >
+                            <i className={`fa-solid ${item.icon}`} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block text-sm font-bold">
+                              {item.label}
+                            </span>
+                            <span className="mt-0.5 block truncate text-[11px] text-slate-400">
+                              {count} รายการ · {item.hint}
+                            </span>
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </aside>
+
+                <div className="p-3 sm:p-4">
+                  {datasetKey === "BRANDS" && (
+                    <OptionListEditor
+                      title="ยี่ห้อรถ"
+                      description="รายการยี่ห้อที่แสดงในแบบฟอร์มลงทะเบียน"
+                      icon="fa-motorcycle"
+                      value={settings.BRANDS || ""}
+                      onChange={(next) =>
+                        setSettings((s) => ({ ...s, BRANDS: next }))
+                      }
+                      placeholder="เช่น Honda"
+                    />
+                  )}
+                  {datasetKey === "COLORS" && (
+                    <OptionListEditor
+                      title="สีรถ"
+                      description="รายการสีที่แสดงในแบบฟอร์มลงทะเบียน"
+                      icon="fa-palette"
+                      value={settings.COLORS || ""}
+                      onChange={(next) =>
+                        setSettings((s) => ({ ...s, COLORS: next }))
+                      }
+                      placeholder="เช่น แดง"
+                    />
+                  )}
+                  {datasetKey === "GRADES" && (
+                    <OptionListEditor
+                      title="ระดับชั้น"
+                      description="ระดับชั้นที่นักเรียนเลือกได้ตอนลงทะเบียน"
+                      icon="fa-graduation-cap"
+                      value={settings.GRADES || ""}
+                      onChange={(next) =>
+                        setSettings((s) => ({ ...s, GRADES: next }))
+                      }
+                      placeholder="เช่น ม.1"
+                    />
+                  )}
+                  {datasetKey === "ROOMS" && (
+                    <OptionListEditor
+                      title="ห้องเรียน"
+                      description="หมายเลขห้องที่แสดงในแบบฟอร์ม"
+                      icon="fa-door-open"
+                      value={settings.ROOMS || ""}
+                      onChange={(next) =>
+                        setSettings((s) => ({ ...s, ROOMS: next }))
+                      }
+                      placeholder="เช่น 1"
+                    />
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

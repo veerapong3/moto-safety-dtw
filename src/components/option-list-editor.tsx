@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { swalConfirm } from "@/lib/swal";
@@ -58,13 +59,17 @@ export function OptionListEditor({
 
   function addItem() {
     const next = draft.trim();
-    if (!next) return;
+    if (!next) {
+      toast.warning("กรุณาพิมพ์รายการก่อนเพิ่ม");
+      return;
+    }
     if (items.some((i) => i.toLowerCase() === next.toLowerCase())) {
-      setDraft("");
+      toast.warning(`“${next}” มีอยู่ในรายการแล้ว`);
       return;
     }
     commit([...items, next]);
     setDraft("");
+    toast.success(`เพิ่ม “${next}” แล้ว`);
   }
 
   async function removeItem(index: number) {
@@ -81,6 +86,7 @@ export function OptionListEditor({
       setEditingIndex(null);
       setEditValue("");
     }
+    toast.success(`ลบ “${label}” แล้ว`);
   }
 
   function startEdit(index: number) {
@@ -91,15 +97,22 @@ export function OptionListEditor({
   function saveEdit() {
     if (editingIndex === null) return;
     const next = editValue.trim();
-    if (!next) return;
+    if (!next) {
+      toast.warning("รายการว่างไม่ได้");
+      return;
+    }
     const duplicated = items.some(
       (item, i) =>
         i !== editingIndex && item.toLowerCase() === next.toLowerCase(),
     );
-    if (duplicated) return;
+    if (duplicated) {
+      toast.warning(`“${next}” มีอยู่ในรายการแล้ว`);
+      return;
+    }
     commit(items.map((item, i) => (i === editingIndex ? next : item)));
     setEditingIndex(null);
     setEditValue("");
+    toast.success("บันทึกรายการแล้ว");
   }
 
   function moveItem(index: number, direction: -1 | 1) {
@@ -115,78 +128,106 @@ export function OptionListEditor({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 bg-slate-50/80 px-5 py-4">
-        <div>
-          <h4 className="text-base font-bold text-slate-800">
-            {icon && <i className={`fa-solid ${icon} mr-2 text-blue-700`} />}
-            {title}
-          </h4>
-          {description && (
-            <p className="mt-1 text-xs text-slate-500">{description}</p>
-          )}
+    <div className="flex h-full min-h-[28rem] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h4 className="text-lg font-bold text-slate-900">
+              {icon && <i className={`fa-solid ${icon} mr-2 text-blue-700`} />}
+              {title}
+            </h4>
+            {description && (
+              <p className="mt-1 text-sm text-slate-500">{description}</p>
+            )}
+          </div>
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+            {items.length} รายการ
+          </span>
         </div>
-        <span className="rounded-full bg-blue-100 px-2.5 py-1 text-[11px] font-bold text-blue-800">
-          {items.length} รายการ
-        </span>
       </div>
 
-      <div className="space-y-3 border-b border-slate-100 px-5 py-4">
-        <div className="flex flex-col gap-2 sm:flex-row">
-          <Input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            placeholder={placeholder}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addItem();
-              }
-            }}
-          />
-          <Button type="button" onClick={addItem} className="shrink-0 sm:px-5">
-            <i className="fa-solid fa-plus" />
-            เพิ่ม
-          </Button>
+      <div className="border-b border-slate-100 bg-slate-50/70 px-5 py-4 sm:px-6">
+        <div className="grid gap-3 lg:grid-cols-[1fr_1.2fr]">
+          <div className="relative">
+            <i className="fa-solid fa-magnifying-glass pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="ค้นหารายการ..."
+              className="bg-white pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder={placeholder}
+              className="bg-white"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addItem();
+                }
+              }}
+            />
+            <Button type="button" onClick={addItem} className="shrink-0 px-4">
+              <i className="fa-solid fa-plus" />
+              เพิ่ม
+            </Button>
+          </div>
         </div>
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="ค้นหารายการในตาราง..."
-          className="bg-white"
-        />
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[420px] border-collapse text-left text-sm">
-          <thead>
-            <tr className="border-b border-slate-100 bg-white text-xs font-bold uppercase tracking-wide text-slate-500">
-              <th className="w-16 px-5 py-3">#</th>
-              <th className="px-5 py-3">รายการ</th>
-              <th className="w-44 px-5 py-3 text-center">จัดการ</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filtered.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={3}
-                  className="px-5 py-10 text-center text-sm text-slate-400"
+      <div className="min-h-0 flex-1 overflow-auto">
+        {filtered.length === 0 ? (
+          <div className="grid h-full place-items-center px-6 py-16 text-center">
+            <div>
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-xl text-slate-400">
+                <i className="fa-solid fa-inbox" />
+              </div>
+              <p className="mt-4 text-sm font-bold text-slate-700">
+                {items.length === 0 ? "ยังไม่มีรายการ" : "ไม่พบรายการที่ค้นหา"}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">
+                {items.length === 0
+                  ? "พิมพ์รายการใหม่ด้านบน แล้วกดเพิ่ม"
+                  : "ลองเปลี่ยนคำค้นหา หรือล้างช่องค้นหา"}
+              </p>
+              {query && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-4"
+                  onClick={() => setQuery("")}
                 >
-                  {items.length === 0
-                    ? "ยังไม่มีรายการ — เพิ่มรายการแรกด้านบน"
-                    : "ไม่พบรายการตามคำค้นหา"}
-                </td>
+                  ล้างการค้นหา
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <table className="w-full border-collapse text-left text-sm">
+            <thead className="sticky top-0 z-10 bg-white">
+              <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <th className="w-14 px-5 py-3">#</th>
+                <th className="px-5 py-3">รายการ</th>
+                <th className="w-40 px-5 py-3 text-right">การทำงาน</th>
               </tr>
-            ) : (
-              filtered.map(({ item, index }) => {
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filtered.map(({ item, index }) => {
                 const editing = editingIndex === index;
                 return (
-                  <tr key={`${item}-${index}`} className="hover:bg-slate-50/80">
-                    <td className="px-5 py-3 tabular-nums text-slate-400">
+                  <tr
+                    key={`${item}-${index}`}
+                    className={`transition ${
+                      editing ? "bg-blue-50/70" : "hover:bg-slate-50/80"
+                    }`}
+                  >
+                    <td className="px-5 py-3.5 tabular-nums text-slate-400">
                       {index + 1}
                     </td>
-                    <td className="px-5 py-3">
+                    <td className="px-5 py-3.5">
                       {editing ? (
                         <Input
                           value={editValue}
@@ -202,6 +243,7 @@ export function OptionListEditor({
                             }
                           }}
                           autoFocus
+                          className="bg-white"
                         />
                       ) : (
                         <span className="font-semibold text-slate-800">
@@ -209,8 +251,8 @@ export function OptionListEditor({
                         </span>
                       )}
                     </td>
-                    <td className="px-5 py-3">
-                      <div className="flex flex-wrap items-center justify-center gap-1.5">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center justify-end gap-1">
                         {editing ? (
                           <>
                             <Button
@@ -236,48 +278,63 @@ export function OptionListEditor({
                           <>
                             <button
                               type="button"
-                              className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-white hover:text-slate-800 hover:shadow-sm disabled:opacity-30"
                               onClick={() => moveItem(index, -1)}
-                              disabled={index === 0}
-                              title="เลื่อนขึ้น"
+                              disabled={index === 0 || Boolean(query)}
+                              title={
+                                query
+                                  ? "ล้างการค้นหาก่อนจัดลำดับ"
+                                  : "เลื่อนขึ้น"
+                              }
                             >
                               <i className="fa-solid fa-arrow-up text-xs" />
                             </button>
                             <button
                               type="button"
-                              className="grid h-8 w-8 place-items-center rounded-lg text-slate-500 hover:bg-slate-100 disabled:opacity-30"
+                              className="grid h-9 w-9 place-items-center rounded-xl text-slate-500 transition hover:bg-white hover:text-slate-800 hover:shadow-sm disabled:opacity-30"
                               onClick={() => moveItem(index, 1)}
-                              disabled={index === items.length - 1}
-                              title="เลื่อนลง"
+                              disabled={
+                                index === items.length - 1 || Boolean(query)
+                              }
+                              title={
+                                query
+                                  ? "ล้างการค้นหาก่อนจัดลำดับ"
+                                  : "เลื่อนลง"
+                              }
                             >
                               <i className="fa-solid fa-arrow-down text-xs" />
                             </button>
-                            <Button
+                            <button
                               type="button"
-                              variant="secondary"
-                              className="px-3 py-1.5 text-xs"
+                              className="grid h-9 w-9 place-items-center rounded-xl text-blue-700 transition hover:bg-blue-50"
                               onClick={() => startEdit(index)}
+                              title="แก้ไข"
                             >
-                              แก้ไข
-                            </Button>
-                            <Button
+                              <i className="fa-solid fa-pen text-xs" />
+                            </button>
+                            <button
                               type="button"
-                              variant="danger"
-                              className="px-3 py-1.5 text-xs"
+                              className="grid h-9 w-9 place-items-center rounded-xl text-rose-600 transition hover:bg-rose-50"
                               onClick={() => void removeItem(index)}
+                              title="ลบ"
                             >
-                              ลบ
-                            </Button>
+                              <i className="fa-solid fa-trash text-xs" />
+                            </button>
                           </>
                         )}
                       </div>
                     </td>
                   </tr>
                 );
-              })
-            )}
-          </tbody>
-        </table>
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="border-t border-slate-100 bg-slate-50/80 px-5 py-3 text-xs text-slate-500 sm:px-6">
+        เคล็ดลับ: กด Enter เพื่อเพิ่ม/บันทึก · Escape เพื่อยกเลิกแก้ไข ·
+        อย่าลืมกด “บันทึกการตั้งค่า” เพื่อให้มีผลในฟอร์มจริง
       </div>
     </div>
   );

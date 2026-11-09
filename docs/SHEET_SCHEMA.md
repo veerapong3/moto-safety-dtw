@@ -19,6 +19,7 @@ Share Spreadsheet ให้ Service Account เป็น **Editor**
 - `helmet`: `มี` | `ไม่มี`
 - `status`: `active` | `deleted`
 - `id`: เช่น `MOTO-A1B2C3D4`
+- `phone` / `student_id` / `room`: ระบบเขียนด้วย prefix `'` เพื่อบังคับเป็นข้อความใน Sheets ไม่ให้เลข `0` นำหน้าถูกตัด (เช่น `0812345678`)
 
 ## Settings
 

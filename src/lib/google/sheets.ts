@@ -24,6 +24,71 @@ function bool(v: string | undefined): boolean {
   return String(v ?? "").toLowerCase() === "true" || v === "1";
 }
 
+/**
+ * Google Sheets often coerces digit-only values into numbers and drops
+ * leading zeros (common with Thai phone numbers like 0812345678).
+ * Prefixing with ' and using USER_ENTERED stores them as plain text.
+ */
+function asSheetText(value: string): string {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  return v.startsWith("'") ? v : `'${v}`;
+}
+
+function fromSheetText(value: string): string {
+  return String(value ?? "")
+    .replace(/^'+/, "")
+    .trim();
+}
+
+/** Normalize Thai phone; restore a missing leading 0 when possible. */
+export function normalizeThaiPhone(value: string): string {
+  const digits = fromSheetText(value).replace(/\D/g, "");
+  if (!digits) return "";
+  if (digits.startsWith("0") && (digits.length === 9 || digits.length === 10)) {
+    return digits;
+  }
+  // Mobile without leading 0 → 9 digits starting 6/8/9
+  if (digits.length === 9 && /^[689]/.test(digits)) {
+    return `0${digits}`;
+  }
+  // Landline without leading 0 → 8 digits
+  if (digits.length === 8 && /^[2-7]/.test(digits)) {
+    return `0${digits}`;
+  }
+  return digits;
+}
+
+function normalizeStudentId(value: string): string {
+  const raw = fromSheetText(value);
+  const digits = raw.replace(/\D/g, "");
+  return digits || raw;
+}
+
+/**
+ * Force Google Sheets to store a value as text so leading zeros
+ * (Thai phone numbers like 0812345678) are not stripped.
+ */
+function asSheetText(value: string): string {
+  const v = String(value ?? "").trim();
+  if (!v) return "";
+  return v.startsWith("'") ? v : `'${v}`;
+}
+
+function fromSheetText(value: string): string {
+  return String(value ?? "")
+    .replace(/^'/, "")
+    .trim();
+}
+
+/** Restore a Thai phone if Sheets previously dropped the leading 0. */
+function normalizeThaiPhone(value: string): string {
+  let phone = fromSheetText(value).replace(/\D/g, "");
+  // Mobile without leading 0 → 9 digits starting with 6/8/9
+  if (/^[689]\d{8}$/.test(phone)) phone = `0${phone}`;
+  return phone;
+}
+
 function rowsToObjects<T extends string>(
   headers: readonly T[],
   rows: string[][],
@@ -56,18 +121,23 @@ async function getValues(sheet: SheetName): Promise<string[][]> {
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: getSheetId(),
     range: `${sheet}!A:Z`,
+    valueRenderOption: "FORMATTED_VALUE",
   });
   const values = (res.data.values as string[][] | undefined) ?? [];
   cacheSet(key, values, SHEET_TTL_MS[sheet]);
   return values;
 }
 
-async function appendRow(sheet: SheetName, values: string[]) {
+async function appendRow(
+  sheet: SheetName,
+  values: string[],
+  valueInputOption: "RAW" | "USER_ENTERED" = "RAW",
+) {
   const sheets = getSheetsClient();
   await sheets.spreadsheets.values.append({
     spreadsheetId: getSheetId(),
     range: `${sheet}!A:Z`,
-    valueInputOption: "RAW",
+    valueInputOption,
     requestBody: { values: [values] },
   });
   invalidateSheet(sheet);
@@ -77,12 +147,13 @@ async function updateRow(
   sheet: SheetName,
   rowIndex1Based: number,
   values: string[],
+  valueInputOption: "RAW" | "USER_ENTERED" = "RAW",
 ) {
   const sheets = getSheetsClient();
   await sheets.spreadsheets.values.update({
     spreadsheetId: getSheetId(),
     range: `${sheet}!A${rowIndex1Based}:Z${rowIndex1Based}`,
-    valueInputOption: "RAW",
+    valueInputOption,
     requestBody: { values: [values] },
   });
   invalidateSheet(sheet);
@@ -275,10 +346,10 @@ function mapRegistration(
     prefix: r.prefix,
     first_name: r.first_name,
     last_name: r.last_name,
-    student_id: r.student_id,
+    student_id: normalizeStudentId(r.student_id),
     grade: r.grade,
     room: r.room,
-    phone: r.phone,
+    phone: normalizeThaiPhone(r.phone),
     brand: r.brand,
     color: r.color,
     plate_number: r.plate_number,
@@ -295,7 +366,13 @@ function mapRegistration(
 }
 
 function registrationToRow(reg: Registration): string[] {
-  return REGISTRATIONS_HEADERS.map((h) => String(reg[h] ?? ""));
+  return REGISTRATIONS_HEADERS.map((h) => {
+    const raw = String(reg[h] ?? "");
+    // Keep leading zeros for phone / student id by forcing text cells.
+    if (h === "phone") return asSheetText(normalizeThaiPhone(raw));
+    if (h === "student_id") return asSheetText(normalizeStudentId(raw));
+    return raw;
+  });
 }
 
 export async function listRegistrations(opts?: {
@@ -346,7 +423,7 @@ export async function createRegistration(
     status: "active",
     pillion_name: input.pillion_name || "-",
   };
-  await appendRow("Registrations", registrationToRow(reg));
+  await appendRow("Registrations", registrationToRow(reg), "USER_ENTERED");
   return reg;
 }
 
@@ -368,7 +445,12 @@ export async function updateRegistration(
     created_at: current.created_at,
     updated_at: new Date().toISOString(),
   };
-  await updateRow("Registrations", rowIndex, registrationToRow(next));
+  await updateRow(
+    "Registrations",
+    rowIndex,
+    registrationToRow(next),
+    "USER_ENTERED",
+  );
   return next;
 }
 

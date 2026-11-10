@@ -419,14 +419,14 @@ export default function FormPage() {
                       : "border-slate-200 bg-slate-50/80"
                   }`}
                 >
-                  <div className="relative flex aspect-[4/3] min-h-[11rem] items-center justify-center overflow-hidden bg-slate-200/60 sm:min-h-[14rem]">
+                  <div className="relative flex aspect-[4/3] min-h-[12rem] items-center justify-center overflow-hidden bg-slate-100 sm:min-h-[15rem]">
                     {previews[slot.key] ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={previews[slot.key]}
                         alt={slot.label}
-                        className={`h-full w-full object-cover transition ${
-                          done ? "" : "opacity-55"
+                        className={`h-full w-full object-contain p-2 transition ${
+                          done ? "" : "opacity-80"
                         }`}
                       />
                     ) : (
@@ -461,23 +461,48 @@ export default function FormPage() {
                     <input
                       type="file"
                       accept="image/*"
+                      capture="environment"
+                      id={`camera-${slot.key}`}
+                      className="hidden"
+                      onChange={(e) => {
+                        void onPick(slot.key, e.target.files?.[0] || null);
+                        e.target.value = "";
+                      }}
+                    />
+                    <input
+                      type="file"
+                      accept="image/*"
                       id={`file-${slot.key}`}
                       className="hidden"
-                      onChange={(e) =>
-                        void onPick(slot.key, e.target.files?.[0] || null)
-                      }
+                      onChange={(e) => {
+                        void onPick(slot.key, e.target.files?.[0] || null);
+                        e.target.value = "";
+                      }}
                     />
-                    <button
-                      type="button"
-                      disabled={busy}
-                      onClick={() =>
-                        document.getElementById(`file-${slot.key}`)?.click()
-                      }
-                      className="mt-auto rounded-2xl bg-blue-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
-                    >
-                      <i className="fa-solid fa-camera mr-2" />
-                      {done ? "เปลี่ยนรูป" : busy ? "กำลังอัปโหลด..." : "เลือกรูป"}
-                    </button>
+                    <div className="mt-auto grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          document.getElementById(`camera-${slot.key}`)?.click()
+                        }
+                        className="rounded-2xl bg-blue-700 px-3 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
+                      >
+                        <i className="fa-solid fa-camera mr-1.5" />
+                        {busy ? "อัปโหลด..." : "ถ่ายรูป"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() =>
+                          document.getElementById(`file-${slot.key}`)?.click()
+                        }
+                        className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                      >
+                        <i className="fa-solid fa-images mr-1.5" />
+                        {done ? "เปลี่ยน" : "คลังรูป"}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

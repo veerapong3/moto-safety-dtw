@@ -156,19 +156,19 @@ export default function FormPage() {
     {
       key: "bike",
       label: "รูปรถจักรยานยนต์",
-      hint: "ถ่ายทั้งคันให้เห็นชัด",
+      hint: "ถ่ายจากกล้องหรือเลือกจากคลัง · เห็นทั้งคันชัด",
       icon: "fa-motorcycle",
     },
     {
       key: "plate",
       label: "รูปป้ายทะเบียน",
-      hint: "ตัวอักษรอ่านได้ชัด",
+      hint: "ถ่ายจากกล้องหรือเลือกจากคลัง · ตัวอักษรอ่านได้",
       icon: "fa-rectangle-ad",
     },
     {
       key: "rider",
       label: "รูปผู้ขับขี่",
-      hint: "หน้าตรง สวมหมวกถ้ามี",
+      hint: "ถ่ายจากกล้องหรือเลือกจากคลัง · หน้าตรง สวมหมวกถ้ามี",
       icon: "fa-user",
     },
   ];
@@ -500,7 +500,7 @@ export default function FormPage() {
                         className="rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
                       >
                         <i className="fa-solid fa-images mr-1.5" />
-                        {done ? "เปลี่ยน" : "คลังรูป"}
+                        {busy ? "อัปโหลด..." : done ? "เปลี่ยน" : "คลังรูป"}
                       </button>
                     </div>
                   </div>

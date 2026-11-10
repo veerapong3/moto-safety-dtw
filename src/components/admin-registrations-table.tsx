@@ -55,8 +55,14 @@ export function AdminRegistrationsTable({
         size: 64,
         header: "ลำดับ",
         cell: ({ row, table }) => {
+          // Visual row number only (not original/upload order).
+          // TanStack row.index is the source-data index and looks jumbled after sort.
           const { pageIndex, pageSize } = table.getState().pagination;
-          const seq = pageIndex * pageSize + row.index + 1;
+          const visualIndex = table
+            .getRowModel()
+            .rows.findIndex((r) => r.id === row.id);
+          const seq =
+            pageIndex * pageSize + (visualIndex >= 0 ? visualIndex : 0) + 1;
           return (
             <span className="inline-flex min-w-[1.75rem] justify-center tabular-nums text-sm font-bold text-slate-700">
               {seq}

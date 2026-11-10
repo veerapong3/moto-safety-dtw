@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { CameraCaptureModal } from "@/components/camera-capture";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
@@ -19,6 +20,7 @@ export default function FormPage() {
   const [config, setConfig] = useState<PublicConfig | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<ImgKey | null>(null);
+  const [cameraSlot, setCameraSlot] = useState<ImgKey | null>(null);
   const [previews, setPreviews] = useState<Record<ImgKey, string>>({
     bike: "",
     plate: "",
@@ -461,17 +463,6 @@ export default function FormPage() {
                     <input
                       type="file"
                       accept="image/*"
-                      capture="environment"
-                      id={`camera-${slot.key}`}
-                      className="hidden"
-                      onChange={(e) => {
-                        void onPick(slot.key, e.target.files?.[0] || null);
-                        e.target.value = "";
-                      }}
-                    />
-                    <input
-                      type="file"
-                      accept="image/*"
                       id={`file-${slot.key}`}
                       className="hidden"
                       onChange={(e) => {
@@ -483,13 +474,11 @@ export default function FormPage() {
                       <button
                         type="button"
                         disabled={busy}
-                        onClick={() =>
-                          document.getElementById(`camera-${slot.key}`)?.click()
-                        }
+                        onClick={() => setCameraSlot(slot.key)}
                         className="rounded-2xl bg-blue-700 px-3 py-3 text-sm font-bold text-white transition hover:bg-blue-800 disabled:opacity-60"
                       >
                         <i className="fa-solid fa-camera mr-1.5" />
-                        {busy ? "อัปโหลด..." : "ถ่ายรูป"}
+                        {busy ? "อัปโหลด..." : "ถ่ายสด"}
                       </button>
                       <button
                         type="button"
@@ -509,6 +498,23 @@ export default function FormPage() {
             })}
           </div>
         </section>
+
+        <CameraCaptureModal
+          open={cameraSlot !== null}
+          title={
+            cameraSlot === "bike"
+              ? "ถ่ายรูปรถจักรยานยนต์"
+              : cameraSlot === "plate"
+                ? "ถ่ายรูปป้ายทะเบียน"
+                : "ถ่ายรูปผู้ขับขี่"
+          }
+          onClose={() => setCameraSlot(null)}
+          onCapture={(file) => {
+            if (!cameraSlot) return;
+            const key = cameraSlot;
+            void onPick(key, file);
+          }}
+        />
 
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200/80 bg-white/95 px-4 py-4 backdrop-blur md:static md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
           <div className="mx-auto flex max-w-5xl flex-col-reverse gap-3 sm:flex-row sm:justify-between">

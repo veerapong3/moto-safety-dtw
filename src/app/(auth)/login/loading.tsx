@@ -1,0 +1,5 @@
+import { PageLoader } from "@/components/page-loader";
+
+export default function Loading() {
+  return <PageLoader label="กำลังเปิดหน้าเข้าสู่ระบบ..." />;
+}

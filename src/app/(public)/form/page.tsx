@@ -510,9 +510,9 @@ export default function FormPage() {
           }
           onClose={() => setCameraSlot(null)}
           onCapture={(file) => {
-            if (!cameraSlot) return;
             const key = cameraSlot;
-            void onPick(key, file);
+            setCameraSlot(null);
+            if (key) void onPick(key, file);
           }}
         />
 

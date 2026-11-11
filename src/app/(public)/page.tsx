@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { PageLoader } from "@/components/page-loader";
 import { timedFetch } from "@/lib/perf-client";
 import { swalError, swalInfo, swalSuccess, swalWarning } from "@/lib/swal";
 import type { DashboardStats, PublicConfig } from "@/lib/types";
@@ -13,11 +14,7 @@ const DashboardCharts = dynamic(
     import("@/components/dashboard-charts").then((m) => m.DashboardCharts),
   {
     ssr: false,
-    loading: () => (
-      <div className="rounded-2xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-400">
-        กำลังโหลดกราฟ...
-      </div>
-    ),
+    loading: () => <PageLoader label="กำลังโหลดกราฟ..." />,
   },
 );
 
@@ -36,16 +33,41 @@ export default function HomePage() {
   const [plate, setPlate] = useState("");
   const [result, setResult] = useState<PlateResult | null>(null);
   const [checking, setChecking] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
-    timedFetch("/api/dashboard/stats")
-      .then((r) => r.json())
-      .then((d) => setStats(d))
-      .catch(() => toast.error("โหลดสถิติไม่สำเร็จ"));
-    timedFetch("/api/config")
-      .then((r) => r.json())
-      .then((d: PublicConfig) => setConfig(d))
-      .catch(() => undefined);
+    let cancelled = false;
+
+    async function loadHome() {
+      setPageLoading(true);
+      try {
+        const [statsRes, configRes] = await Promise.all([
+          timedFetch("/api/dashboard/stats"),
+          timedFetch("/api/config"),
+        ]);
+
+        if (cancelled) return;
+
+        if (statsRes.ok) {
+          setStats((await statsRes.json()) as DashboardStats);
+        } else {
+          toast.error("โหลดสถิติไม่สำเร็จ");
+        }
+
+        if (configRes.ok) {
+          setConfig((await configRes.json()) as PublicConfig);
+        }
+      } catch {
+        if (!cancelled) toast.error("โหลดสถิติไม่สำเร็จ");
+      } finally {
+        if (!cancelled) setPageLoading(false);
+      }
+    }
+
+    void loadHome();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function checkPlate() {
@@ -98,8 +120,12 @@ export default function HomePage() {
     }
   }
 
+  if (pageLoading) {
+    return <PageLoader label="กำลังโหลดหน้าแรก..." />;
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-[fadeUp_0.45s_ease-out]">
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 to-indigo-800 p-6 text-white shadow-xl sm:p-8">
         <div
           aria-hidden

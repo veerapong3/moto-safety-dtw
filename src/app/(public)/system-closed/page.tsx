@@ -2,18 +2,25 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { PageLoader } from "@/components/page-loader";
 import { timedFetch } from "@/lib/perf-client";
 import type { PublicConfig } from "@/lib/types";
 
 export default function SystemClosedPage() {
   const [config, setConfig] = useState<PublicConfig | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   useEffect(() => {
     timedFetch("/api/config")
       .then((r) => r.json())
       .then(setConfig)
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setPageLoading(false));
   }, []);
+
+  if (pageLoading) {
+    return <PageLoader label="กำลังโหลดสถานะระบบ..." />;
+  }
 
   return (
     <div className="mx-auto my-8 max-w-2xl sm:my-16">

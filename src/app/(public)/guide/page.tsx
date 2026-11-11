@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { PageSplash } from "@/components/page-splash";
 
 const steps = [
   {
@@ -100,6 +101,7 @@ const mistakes = [
 
 export default function GuidePage() {
   return (
+    <PageSplash label="กำลังโหลดคู่มือ...">
     <div className="mx-auto max-w-5xl space-y-7 pb-20">
       <header className="overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,#0b1f4d_0%,#1e40af_55%,#2563eb_100%)] px-7 py-10 text-white shadow-lg shadow-blue-900/20 sm:px-10 sm:py-12">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-blue-200/90">
@@ -282,5 +284,6 @@ export default function GuidePage() {
         </div>
       </section>
     </div>
+    </PageSplash>
   );
 }

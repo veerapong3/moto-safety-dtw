@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { PageLoader } from "@/components/page-loader";
 
 /**
- * Thin top progress bar on client navigations so route changes feel responsive
- * even when segment loading UI is brief.
+ * Top progress bar + full branded overlay on client navigations.
  */
 export function RouteProgress() {
   const pathname = usePathname();
@@ -34,7 +34,7 @@ export function RouteProgress() {
         setActive(false);
         setDone(false);
       }, 280);
-    }, 420);
+    }, 520);
 
     return () => {
       if (hideTimer.current) clearTimeout(hideTimer.current);
@@ -45,19 +45,30 @@ export function RouteProgress() {
   if (!active) return null;
 
   return (
-    <div
-      aria-hidden
-      className="pointer-events-none fixed inset-x-0 top-0 z-[200] h-0.5 overflow-hidden"
-    >
+    <>
       <div
-        className={`h-full origin-left bg-gradient-to-r from-blue-600 via-sky-400 to-yellow-400 shadow-[0_0_12px_rgba(37,99,235,0.55)] transition-[width,opacity] duration-300 ease-out ${
-          done ? "w-full opacity-0" : "w-[72%] opacity-100"
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 top-0 z-[200] h-0.5 overflow-hidden"
+      >
+        <div
+          className={`h-full origin-left bg-gradient-to-r from-blue-600 via-sky-400 to-yellow-400 shadow-[0_0_12px_rgba(37,99,235,0.55)] transition-[width,opacity] duration-300 ease-out ${
+            done ? "w-full opacity-0" : "w-[72%] opacity-100"
+          }`}
+          style={{
+            width: done ? "100%" : undefined,
+            animation: done
+              ? undefined
+              : "routeProgressGrow 0.9s ease-out forwards",
+          }}
+        />
+      </div>
+      <div
+        className={`fixed inset-0 z-[190] transition-opacity duration-280 ${
+          done ? "pointer-events-none opacity-0" : "opacity-100"
         }`}
-        style={{
-          width: done ? "100%" : undefined,
-          animation: done ? undefined : "routeProgressGrow 0.9s ease-out forwards",
-        }}
-      />
-    </div>
+      >
+        <PageLoader fullScreen label="กำลังโหลดหน้า..." />
+      </div>
+    </>
   );
 }

@@ -10,6 +10,7 @@ import {
   registrationImages,
 } from "@/components/image-lightbox";
 import { OptionListEditor } from "@/components/option-list-editor";
+import { PageLoader } from "@/components/page-loader";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
@@ -23,11 +24,7 @@ const DashboardCharts = dynamic(
     import("@/components/dashboard-charts").then((m) => m.DashboardCharts),
   {
     ssr: false,
-    loading: () => (
-      <div className="rounded-2xl border border-slate-100 bg-white p-10 text-center text-sm text-slate-400">
-        กำลังโหลดกราฟ...
-      </div>
-    ),
+    loading: () => <PageLoader label="กำลังโหลดกราฟ..." />,
   },
 );
 
@@ -313,6 +310,10 @@ export default function AdminPage() {
   const open =
     (settings.REGISTRATION_OPEN || "true").toLowerCase() === "true" ||
     settings.REGISTRATION_OPEN === "ON";
+
+  if (loading && rows.length === 0 && !config) {
+    return <PageLoader label="กำลังโหลดแผงผู้ดูแล..." />;
+  }
 
   const tabs = [
     { id: "overview" as const, label: "ภาพรวม", icon: "fa-chart-pie" },

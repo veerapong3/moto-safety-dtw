@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { CameraCaptureModal } from "@/components/camera-capture";
+import { PageLoader } from "@/components/page-loader";
 import { Button } from "@/components/ui/button";
 import { Field, Input, Select } from "@/components/ui/input";
 import { compressImageFile } from "@/lib/image-client";
@@ -141,12 +142,7 @@ export default function FormPage() {
   }
 
   if (!config) {
-    return (
-      <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-blue-200 border-t-blue-700" />
-        <p className="text-sm text-slate-500">กำลังโหลดแบบฟอร์ม...</p>
-      </div>
-    );
+    return <PageLoader label="กำลังโหลดแบบฟอร์ม..." />;
   }
 
   const imgSlots: {

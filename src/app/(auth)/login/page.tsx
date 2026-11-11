@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
+import { PageSplash } from "@/components/page-splash";
 import { PerfHud } from "@/components/perf-hud";
 import { SiteFooter } from "@/components/site-footer";
 import { timedFetch } from "@/lib/perf-client";
@@ -46,6 +47,7 @@ export default function LoginPage() {
   }
 
   return (
+    <PageSplash label="กำลังเปิดหน้าเข้าสู่ระบบ...">
     <div className="relative flex min-h-screen flex-col overflow-hidden bg-slate-100">
       <div
         aria-hidden
@@ -159,5 +161,6 @@ export default function LoginPage() {
       <SiteFooter className="relative z-10" />
       <PerfHud />
     </div>
+    </PageSplash>
   );
 }
